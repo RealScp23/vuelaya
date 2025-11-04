@@ -12,7 +12,6 @@ import Cuenta from "./pages/cuenta/cuenta";
 function AppWrapper() {
   const location = useLocation();
 
-  // Rutas donde NO queremos mostrar el navbar
   const noNavbarRoutes = ["/", "/login"];
 
   const showNavbar = !noNavbarRoutes.includes(location.pathname);
@@ -24,7 +23,6 @@ function AppWrapper() {
         <Route path="/" element={<Presentation />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        {/* Cambiamos "/destinos" a "/vuelos" */}
         <Route path="/vuelos" element={<Vuelos />} />
         <Route path="/contacto" element={<Contacto />} />
         <Route path="/cuenta" element={<Cuenta />} />
