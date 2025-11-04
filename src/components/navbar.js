@@ -11,6 +11,8 @@ function Navbar() {
         <li><Link to="/vuelos">Vuelos</Link></li>
         <li><Link to="/contacto">Contacto</Link></li>
         <li><Link to="/cuenta">Cuenta</Link></li>
+        <li><Link to="/Reservaciones">Reservaciones</Link></li>
+
       </ul>
     </nav>
   );

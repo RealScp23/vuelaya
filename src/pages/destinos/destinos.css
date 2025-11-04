@@ -1,3 +1,7 @@
+/* ======================
+   DESTINOS.CSS (CORREGIDO)
+   ====================== */
+
 .vuelos-container {
   padding: 32px;
 }
@@ -12,24 +16,28 @@
 /* Grid de tarjetas */
 .tarjetas-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);/* Adaptable a cualquier pantalla */
-  column-gap: 12px; /* separación horizontal */
-  row-gap: 40px;  
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 12px;
+  row-gap: 40px;
 }
 
 /* Tarjeta individual */
 .tarjeta {
+  position: relative; /* importante para posicionar el corazón */
   background-color: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  width: 100%; /* Ocupa todo el ancho de su columna */
-  max-width: 400px; /* Mantiene tamaño máximo */
-  margin: 0 auto; /* Centra tarjetas cuando hay espacio extra */
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Hover de tarjeta (visual) */
 .tarjeta:hover {
   transform: scale(1.03);
   box-shadow: 0 6px 15px rgba(0,0,0,0.15);
@@ -60,21 +68,29 @@
   margin: 4px 0;
 }
 
-/* Botón */
-.tarjeta button {
+/* ---------------------------
+   Botón "Ver más" (solo botones dentro de .contenido)
+   --------------------------- */
+.tarjeta .contenido > button,
+.tarjeta .contenido > .ver-mas-btn {
   margin-top: 12px;
   width: 100%;
   padding: 10px 0;
-  background-color: black;
+  background-color: #000;
   color: #fff;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.12s ease;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto; /* asegúrate que sea interactivo */
 }
 
-.tarjeta button:hover {
+.tarjeta .contenido > button:hover,
+.tarjeta .contenido > .ver-mas-btn:hover {
   background-color: #008e76;
+  transform: translateY(-2px);
 }
 
 /* Responsive: 2 tarjetas por fila en pantallas medianas */
@@ -91,11 +107,11 @@
   }
 }
 
-/* Botón de limpiar filtros */
+/* Botón de limpiar filtros - exactamente como pediste */
 .clear-btn {
   background-color: black;
-  color:aliceblue;
-  margin: 12px 0 24px 0; /* un poco de espacio debajo y arriba */
+  color: aliceblue;
+  margin: 12px 0 24px 0;
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
@@ -113,5 +129,297 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px; /* separación debajo */
+  margin-bottom: 24px;
+}
+
+/* ---------------------------
+   ADICIONES: wishlist, modal
+   --------------------------- */
+
+/* Tarjeta meta (pequeña fila con duración y asientos) */
+.tarjeta-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Heart / wishlist button (posicionado sobre la tarjeta)
+   - Siempre visible, cuadrito con esquinas redondeadas
+   - Hover lo ilumina en rosa
+   - Clase .wish-active para estado seleccionado (colorido)
+*/
+.wish-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+
+  width: 40px;
+  height: 40px;
+  padding: 6px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(8,20,30,0.06);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+  color: #cfcfcf;
+  cursor: pointer;
+
+  transition: transform 120ms ease, background 160ms ease, color 120ms ease, box-shadow 160ms ease;
+  pointer-events: auto; /* siempre interactivo */
+}
+
+/* Hover: ilumina rosa (siempre visible aunque no se esté sobre la tarjeta) */
+.wish-btn:hover {
+  background: linear-gradient(135deg,#e9e9e9,#ececec);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(255,69,103,0.14);
+  transform: translateY(-2px);
+}
+
+/* Estado activo (seleccionado en la wishlist) */
+.wish-active,
+.wish-btn.active {
+  background: linear-gradient(135deg,#ff7a7a,#ff4567);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 24px rgba(255,84,113,0.12);
+}
+
+/* SVG en el botón debe usar fill="currentColor" para heredar color */
+.wish-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: currentColor;
+}
+
+/* foco accesible */
+.wish-btn:focus-visible {
+  outline: 3px solid rgba(255,84,113,0.18);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* Clase específica para botón "Ver más" (por compatibilidad) */
+.ver-mas-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px 0;
+  background-color: #000;
+  color: #fff;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.ver-mas-btn:hover {
+  background-color: #008e76;
+}
+
+/* === Modal styles (detalle de vuelo) === */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-contenedor.vuelo-detalle {
+  width: 100%;
+  max-width: 1000px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+  animation: aparecer 0.18s ease;
+}
+
+/* Detalle header */
+.detalle-header {
+  display:flex;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  background: linear-gradient(90deg,#f8fafc,#ffffff);
+}
+
+.detalle-header img {
+  width: 160px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.detalle-titulo h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #0b3a2f;
+}
+.detalle-titulo p {
+  margin: 4px 0;
+  color: #666;
+}
+
+/* Close button */
+.modal-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  cursor: pointer;
+  color: #444;
+}
+
+/* Detalle body */
+.detalle-body {
+  display: flex;
+  gap: 24px;
+  padding: 20px 28px 28px 28px;
+}
+
+.detalle-left {
+  flex: 1;
+  font-size: 0.98rem;
+  color: #333;
+  line-height: 1.6;
+}
+
+.detalle-right {
+  width: 300px;
+  background: linear-gradient(180deg,#ffffff,#f7f9fb);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(10,20,30,0.04);
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+}
+
+.precio {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.precio-valor {
+  font-size: 1.45rem;
+  color: #0b3a2f;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* modal actions */
+.modal-actions {
+  display:flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.boton-reservar {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #00796b;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+.boton-wishlist {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #00796b;
+  background: transparent;
+  color: #00796b;
+  cursor: pointer;
+}
+.boton-wishlist.active {
+  background: linear-gradient(135deg,#ff7a7a,#ff4567);
+  color: #fff;
+  border: none;
+}
+
+/* nota */
+.nota {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .tarjetas-grid { grid-template-columns: repeat(2,1fr); }
+  .detalle-body { flex-direction: column; }
+  .detalle-right { width: 100%; }
+}
+@media (max-width: 600px) {
+  .tarjetas-grid { grid-template-columns: 1fr; }
+}
+
+/* Animación aparecer (reutilizable) */
+@keyframes aparecer {
+  from { transform: translateY(6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* === Animación pop para resaltar tarjeta seleccionada === */
+.tarjeta-pop {
+  animation: popAnim 0.45s ease forwards;
+}
+@keyframes popAnim {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* --- Ajustes: alinear / justificar texto dentro del modal de "Ver más" --- */
+.modal-contenedor.vuelo-detalle .detalle-titulo,
+.modal-contenedor.vuelo-detalle .detalle-titulo h2,
+.modal-contenedor.vuelo-detalle .detalle-titulo p {
+  /* Mantener título alineado a la izquierda para legibilidad */
+  text-align: left;
+}
+
+/* Justificar el bloque principal de contenido (texto descriptivo, párrafos, listas) */
+.modal-contenedor.vuelo-detalle .detalle-left,
+.modal-contenedor.vuelo-detalle .detalle-left p,
+.modal-contenedor.vuelo-detalle .detalle-left li {
+  text-align: justify;        /* texto justificado */
+  text-justify: inter-word;   /* mejor separación de palabras en navegadores que lo soporten */
+  line-height: 1.6;           /* espacio vertical más cómodo */
+  color: #333;                /* contraste legible */
+  margin: 0 0 10px 0;
+}
+
+/* Asegura que el cuerpo del modal no esté centrando verticalmente el contenido */
+.modal-contenedor.vuelo-detalle .detalle-body {
+  align-items: flex-start;
+}
+
+/* Si hay elementos <strong> o etiquetas de etiqueta dentro del bloque, garantizamos consistencia */
+.modal-contenedor.vuelo-detalle .detalle-left strong {
+  font-weight: 700;
+  color: #0b3a2f;
+}
+
+/* Pequeño ajuste responsivo para móviles: más espacio y lectura cómoda */
+@media (max-width: 900px) {
+  .modal-contenedor.vuelo-detalle .detalle-left {
+    padding-right: 8px;
+    text-align: justify;
+  }
 }
