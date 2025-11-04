@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+// === CUENTA.JS ===
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./cuenta.css";
+import { vuelos } from "../../assets/mockups/vuelos";
 
 const Cuenta = () => {
   const navigate = useNavigate();
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
 
   const usuario = {
     nombre: "Antonio Pérez",
@@ -25,6 +29,21 @@ const Cuenta = () => {
     { id: 8, descripcion: "Vuelo Cancún ✈ París - Air France", fecha: "10/07/2025" },
   ];
 
+  useEffect(() => {
+    // carga la wishlist (ids y nombre) desde localStorage y mapea a vuelos reales si es posible
+    try {
+      const saved = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      // mapear a datos completos del vuelo (si existe en assets)
+      const mapped = saved.map((w) => {
+        const full = vuelos.find((v) => v.id === w.id);
+        return full ? { ...full } : w;
+      });
+      setWishlist(mapped);
+    } catch {
+      setWishlist([]);
+    }
+  }, []);
+
   const handleCerrarSesion = () => {
     setMostrarConfirmacion(true);
   };
@@ -38,25 +57,44 @@ const Cuenta = () => {
     setMostrarConfirmacion(false);
   };
 
+  const removeFromWishlist = (id) => {
+    const current = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    const next = current.filter((w) => w.id !== id);
+    localStorage.setItem("wishlist", JSON.stringify(next));
+    setWishlist((prev) => prev.filter((p) => p.id !== id));
+  };
+
   return (
     <div className="cuenta-container">
       {/* Panel izquierdo */}
       <div className="cuenta-izquierda">
-        <div className="foto-perfil-container">
-          <img src={usuario.foto} alt="Foto de perfil" className="foto-perfil" />
+        <div>
+          <div className="foto-perfil-container">
+            <img src={usuario.foto} alt="Foto de perfil" className="foto-perfil" />
+          </div>
+
+          <h1 className="cuenta-titulo">Mi Cuenta</h1>
+
+          <div className="cuenta-info">
+            <p><strong>Nombre:</strong> {usuario.nombre}</p>
+            <p><strong>Correo:</strong> {usuario.correo}</p>
+            <p><strong>Teléfono:</strong> {usuario.telefono}</p>
+            <p><strong>Dirección:</strong> {usuario.direccion}</p>
+          </div>
         </div>
 
-        <h1 className="cuenta-titulo">Mi Cuenta</h1>
+        {/* Texto y botón de favoritos */}
+        <div className="lista-favoritos-texto">Lista de favoritos</div>
+        <button
+          className="toggle-deseados"
+          onClick={() => setShowWishlist(true)}
+        >
+          Ver favoritos ({wishlist.length})
+        </button>
 
-        <div className="cuenta-info">
-          <p><strong>Nombre:</strong> {usuario.nombre}</p>
-          <p><strong>Correo:</strong> {usuario.correo}</p>
-          <p><strong>Teléfono:</strong> {usuario.telefono}</p>
-          <p><strong>Dirección:</strong> {usuario.direccion}</p>
-        </div>
-
+        {/* Botón de cerrar sesión */}
         <button className="cerrar-sesion" onClick={handleCerrarSesion}>
-          Cerrar Sesión
+          Cerrar sesión
         </button>
       </div>
 
@@ -76,7 +114,7 @@ const Cuenta = () => {
         </ul>
       </div>
 
-      {/* Modal flotante de confirmación */}
+      {/* Modal de confirmación de cierre de sesión */}
       {mostrarConfirmacion && (
         <div className="modal-fondo">
           <div className="modal-contenedor">
@@ -89,6 +127,54 @@ const Cuenta = () => {
                 Aceptar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de wishlist */}
+      {showWishlist && (
+        <div className="wishlist-modal-fondo">
+          <div className="wishlist-modal">
+            <button
+              className="wishlist-close"
+              onClick={() => setShowWishlist(false)}
+            >
+              ×
+            </button>
+            <h2>Tus Favoritos</h2>
+            {wishlist.length === 0 ? (
+              <p className="wishlist-empty">No hay vuelos en tu lista de deseados.</p>
+            ) : (
+              <div className="wishlist-grid">
+                {wishlist.map((w) => (
+                  <li key={w.id} className="deseado-item">
+                    <div className="deseado-left">
+                      <img src={w.image} alt={w.nombre} className="deseado-thumb" />
+                      <div>
+                        <div className="deseado-title">{w.nombre}</div>
+                        <div className="deseado-sub">{w.origen} → {w.destino}</div>
+                      </div>
+                    </div>
+                    <div className="deseado-actions">
+                      <button
+                        className="ver-detalle"
+                        onClick={() => {
+                          // NUEVO: abrir modal del vuelo específico en la página de Vuelos
+                          setShowWishlist(false);
+                          // navegamos a /vuelos y pasamos state con el id a abrir
+                          navigate("/vuelos", { state: { openModalId: w.id } });
+                        }}
+                      >
+                        Ir a vuelo
+                      </button>
+                      <button onClick={() => removeFromWishlist(w.id)} className="quitar-deseado">
+                        Quitar
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

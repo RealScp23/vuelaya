@@ -14,7 +14,7 @@ function Presentation() {
       <div className="presentation-content">
         <h1>Descubre México.</h1>
         <p>Tu travesía comienza aquí</p>
-        <button onClick={() => navigate("/login")}>RESERVÁ TU VUELO</button>
+        <button onClick={() => navigate("/login")}>RESERVA TU VUELO</button>
       </div>
     </div>
   );
