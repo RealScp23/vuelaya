@@ -15,7 +15,6 @@ import Reservaciones from "./pages/reservaciones/reserva"; // <-- asegúrate de 
 function AppWrapper() {
   const location = useLocation();
 
-  // Rutas donde NO queremos mostrar el navbar
   const noNavbarRoutes = ["/", "/login"];
   const showNavbar = !noNavbarRoutes.includes(location.pathname);
 

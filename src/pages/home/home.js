@@ -8,7 +8,6 @@ function Home() {
   const [destinations, setDestinations] = useState([]);
   const navigate = useNavigate();
 
-  // Simula fetch de destinos populares
   useEffect(() => {
     const fetchData = async () => {
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -27,7 +26,6 @@ function Home() {
     const lettersRegex = /^[A-Za-z\s]+$/;
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-    // Validar solo si hay valor
     if (origin && !lettersRegex.test(origin)) {
       alert("Por favor ingresa un origen válido (solo letras).");
       return;

@@ -3,7 +3,7 @@ export const destinationsMock = [
     _id: "1",
     name: "Cancún, Quintana Roo",
     description: "Disfruta de un paraíso tropical con descuentos exclusivos.",
-    image: "https://ik.imagekit.io/qmfie1kaxy/cancun,%20quintana%20roo.jpg?updatedAt=1760848725943",
+    image: "https://ik.imagekit.io/qmfie1kaxy/cancun-quintana-roo.jpg?updatedAt=1760849831492",
   },
   {
     _id: "2",
