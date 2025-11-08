@@ -1,49 +1,32 @@
-// Importamos Express
+// Importaciones
+require("dotenv").config(); // Para leer variables del .env
 const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors"); // 👈 Agregado
+
 const app = express();
 
-// Puerto donde escuchará el servidor
-const PORT = 5000;
+// Middleware
+app.use(cors()); // 👈 Permite que el frontend (React) se comunique
+app.use(express.json()); // Para poder leer JSON en las peticiones
 
-// Datos de ejemplo (simulando una base de datos)
-const cuentas = [
-  { 
-    _id: "1",
-    nombre: "Juan Perez",
-    correo: "juan@email.com",
-    contraseña: "123456",
-    rol: "usuario",
-    historial_reservaciones: []
-  },
-  { 
-    _id: "2",
-    nombre: "María López",
-    correo: "maria@email.com",
-    contraseña: "abcdef",
-    rol: "usuario",
-    historial_reservaciones: []
-  },
-  { 
-    _id: "3",
-    nombre: "Carlos Ramírez",
-    correo: "carlos@email.com",
-    contraseña: "654321",
-    rol: "admin",
-    historial_reservaciones: []
-  }
-];
+// Puerto del servidor
+const PORT = process.env.PORT || 5000;
 
-// Ruta de prueba
+// Conexión con MongoDB Atlas
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Conectado a MongoDB Atlas"))
+  .catch((err) => console.error("❌ Error al conectar a MongoDB:", err));
+
+// Rutas
+app.use("/usuarios", require("./routes/usuarios"));
+
+// Ruta principal
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando correctamente ✅");
+  res.send("Servidor y base de datos conectados correctamente ✅");
 });
 
-// Ruta para mostrar las cuentas (en JSON)
-app.get("/cuentas", (req, res) => {
-  res.json(cuentas);
-});
-
-// Iniciar el servidor
+// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
