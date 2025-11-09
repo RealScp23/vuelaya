@@ -272,3 +272,46 @@ hr { border:none; height:1px; background:#f0f6fb; margin:8px 0 4px 0; }
 
 /* Para evitar overflow horizontal accidental */
 * { box-sizing: border-box; max-width: 100%; }
+
+/* --- Estilos nuevos para el selector de tipo de tarjeta --- */
+.form-row select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #eef3f6;
+  font-size: 0.95rem;
+  background-color: #fff;
+  color: #111;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-row select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 191, 165, 0.25);
+}
+
+.form-row select:hover {
+  border-color: var(--primary-dark);
+}
+
+/* Flechita personalizada en el select */
+.form-row select {
+  background-image: linear-gradient(45deg, transparent 50%, var(--primary) 50%),
+                    linear-gradient(135deg, var(--primary) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Mejor alineación en móvil */
+@media (max-width: 800px) {
+  .form-row select {
+    font-size: 1rem;
+    padding: 12px;
+  }
+}
