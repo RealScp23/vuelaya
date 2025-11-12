@@ -3,9 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./cuenta.css";
 import { vuelos } from "../../assets/mockups/vuelos";
+import { useAuth } from "../../context/AuthContext"; // ✅ Importa el contexto
 
 const Cuenta = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth(); // ✅ Obtén logout del contexto
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [wishlist, setWishlist] = useState([]);
@@ -30,10 +32,8 @@ const Cuenta = () => {
   ];
 
   useEffect(() => {
-    // carga la wishlist (ids y nombre) desde localStorage y mapea a vuelos reales si es posible
     try {
       const saved = JSON.parse(localStorage.getItem("wishlist") || "[]");
-      // mapear a datos completos del vuelo (si existe en assets)
       const mapped = saved.map((w) => {
         const full = vuelos.find((v) => v.id === w.id);
         return full ? { ...full } : w;
@@ -49,8 +49,8 @@ const Cuenta = () => {
   };
 
   const confirmarCerrarSesion = () => {
-    localStorage.removeItem("usuario");
-    navigate("/login");
+    logout(); // ✅ Usa el método del contexto
+    navigate("/login", { replace: true });
   };
 
   const cancelarCerrarSesion = () => {
@@ -83,7 +83,6 @@ const Cuenta = () => {
           </div>
         </div>
 
-        {/* Texto y botón de favoritos */}
         <div className="lista-favoritos-texto">Lista de favoritos</div>
         <button
           className="toggle-deseados"
@@ -92,7 +91,6 @@ const Cuenta = () => {
           Ver favoritos ({wishlist.length})
         </button>
 
-        {/* Botón de cerrar sesión */}
         <button className="cerrar-sesion" onClick={handleCerrarSesion}>
           Cerrar sesión
         </button>
@@ -114,7 +112,7 @@ const Cuenta = () => {
         </ul>
       </div>
 
-      {/* Modal de confirmación de cierre de sesión */}
+      {/* Modal de confirmación */}
       {mostrarConfirmacion && (
         <div className="modal-fondo">
           <div className="modal-contenedor">
@@ -159,15 +157,16 @@ const Cuenta = () => {
                       <button
                         className="ver-detalle"
                         onClick={() => {
-                          // NUEVO: abrir modal del vuelo específico en la página de Vuelos
                           setShowWishlist(false);
-                          // navegamos a /vuelos y pasamos state con el id a abrir
                           navigate("/vuelos", { state: { openModalId: w.id } });
                         }}
                       >
                         Ir a vuelo
                       </button>
-                      <button onClick={() => removeFromWishlist(w.id)} className="quitar-deseado">
+                      <button
+                        onClick={() => removeFromWishlist(w.id)}
+                        className="quitar-deseado"
+                      >
                         Quitar
                       </button>
                     </div>

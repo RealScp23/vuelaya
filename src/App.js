@@ -1,6 +1,14 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 import Presentation from "./pages/presentation/presentation";
 import Login from "./pages/login/login";
@@ -9,12 +17,11 @@ import Home from "./pages/home/home";
 import Vuelos from "./pages/destinos/destinos";
 import Contacto from "./pages/contacto/contacto";
 import Cuenta from "./pages/cuenta/cuenta";
-import Reservaciones from "./pages/reservaciones/reserva"; // <-- asegúrate de que este path exista
+import Reservaciones from "./pages/reservaciones/reserva";
 
-// Utility route component: muestra navbar excepto en rutas listadas
+// ✅ Componente que gestiona el layout y las rutas
 function AppWrapper() {
   const location = useLocation();
-
   const noNavbarRoutes = ["/", "/login"];
   const showNavbar = !noNavbarRoutes.includes(location.pathname);
 
@@ -22,29 +29,75 @@ function AppWrapper() {
     <>
       {showNavbar && <Navbar />}
       <Routes>
+        {/* Rutas públicas */}
         <Route path="/" element={<Presentation />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/vuelos" element={<Vuelos />} />
-        <Route path="/contacto" element={<Contacto />} />
-        <Route path="/cuenta" element={<Cuenta />} />
 
-        {/* Reservaciones: pantalla CRUD + pago simulado */}
-        <Route path="/reservaciones" element={<Reservaciones />} />
+        {/* Rutas protegidas (solo si hay sesión) */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vuelos"
+          element={
+            <ProtectedRoute>
+              <Vuelos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contacto"
+          element={
+            <ProtectedRoute>
+              <Contacto />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cuenta"
+          element={
+            <ProtectedRoute>
+              <Cuenta />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reservaciones"
+          element={
+            <ProtectedRoute>
+              <Reservaciones />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Ruta de compatibilidad: /reservacion/:id 
-            Redirige a /vuelos y deja state para abrir modal del vuelo */}
+        {/* Redirección de /reservacion/:id hacia /vuelos */}
         <Route path="/reservacion/:id" element={<ReservacionRedirect />} />
 
-        {/* (Opcional) 404 simple: */}
+        {/* Página 404 */}
         <Route path="*" element={<NotFoundFallback />} />
       </Routes>
     </>
   );
 }
 
-/* Redirige /reservacion/:id -> /vuelos con state.openModalId
-   Esto evita rutas rotas si tu app navega a /reservacion/123 */
+// 🔒 Componente que bloquea el acceso a rutas si no hay sesión
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!isAuthenticated) navigate("/login", { replace: true });
+  }, [isAuthenticated, navigate]);
+
+  return isAuthenticated ? children : null;
+}
+
+// Redirige /reservacion/:id → /vuelos
 function ReservacionRedirect() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -54,31 +107,32 @@ function ReservacionRedirect() {
       navigate("/vuelos", { replace: true });
       return;
     }
-    // Navega a /vuelos y solicita abrir modal para el vuelo id
     navigate("/vuelos", { state: { openModalId: Number(id) } });
-    // replace true podría evitar historial extra; aquí dejamos por defecto
-    // navigate("/vuelos", { replace: true, state: { openModalId: Number(id) } });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, navigate]);
 
   return null;
 }
 
-/* Fallback simple para rutas no encontradas */
+// Página 404
 function NotFoundFallback() {
   return (
     <div style={{ padding: 40 }}>
       <h2>Página no encontrada</h2>
-      <p>La ruta que solicitaste no existe. Ve a <a href="/vuelos">Vuelos</a>.</p>
+      <p>
+        La ruta que solicitaste no existe. Ve a <a href="/vuelos">Vuelos</a>.
+      </p>
     </div>
   );
 }
 
+// 🧠 Envolver la app con AuthProvider
 function App() {
   return (
-    <Router>
-      <AppWrapper />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppWrapper />
+      </Router>
+    </AuthProvider>
   );
 }
 
