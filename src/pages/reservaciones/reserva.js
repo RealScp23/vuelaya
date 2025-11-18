@@ -8,7 +8,7 @@ import { vuelos } from "../../assets/mockups/vuelos";
 const formatCurrency = (n) =>
   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(n || 0);
 
-const LOCAL_KEY = "reservaciones_app_v1";
+const API_URL = "http://localhost:5000/reservaciones";
 
 /* Leer email del usuario desde localStorage (si está logueado) */
 function getUsuarioEmail() {
@@ -27,15 +27,7 @@ export default function Reservaciones() {
   const location = useLocation();
   const handledOpenFromState = useRef(false);
 
-  const [reservas, setReservas] = useState(() => {
-    try {
-      const data = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
-      return Array.isArray(data) ? data : [];
-    } catch {
-      return [];
-    }
-  });
-
+  const [reservas, setReservas] = useState([]);
   const [selected, setSelected] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
@@ -59,14 +51,17 @@ export default function Reservaciones() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // 🔒 Guarda automáticamente en localStorage cada vez que cambian las reservas
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(reservas));
-  }, [reservas]);
-
   const getVueloById = (id) => vuelos.find((v) => Number(v.id) === Number(id));
   const computePrecio = (vuelo, pasajeros = 1) =>
     vuelo && typeof vuelo.precio === "number" ? vuelo.precio * Math.max(1, pasajeros) : 1000 * Math.max(1, pasajeros);
+
+  // 🔹 Obtener todas las reservaciones desde el backend
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then(setReservas)
+      .catch((err) => console.error("Error al obtener reservaciones:", err));
+  }, []);
 
   // Si venimos desde otra pantalla con { openForm, vueloId }
   useEffect(() => {
@@ -98,72 +93,104 @@ export default function Reservaciones() {
     }
   }, [location.state]);
 
-  // CRUD
-  const crearReserva = async (payload) => {
-    setProcessingPayment(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setProcessingPayment(false);
+  // 🔹 Crear nueva reserva (POST)
+const crearReserva = async (payload) => {
+  setProcessingPayment(true);
+  await new Promise((r) => setTimeout(r, 800));
+  setProcessingPayment(false);
 
-    const userEmail = getUsuarioEmail();
-    const id = Date.now();
-    const reserva = {
-      id,
-      vueloId: payload.vueloId,
-      nombre: payload.nombrePasajero,
-      email: userEmail || "",
-      telefono: payload.telefono,
-      pasajeros: Number(payload.pasajeros),
-      asiento: payload.asiento || "Asignar",
-      precio_total: Number(payload.precio_total) || 0,
-      aerolinea: payload.aerolinea || "",
-      fecha_salida: payload.fecha_salida || "",
-      hora_salida: payload.hora_salida || "",
-      descripcion: payload.descripcion || "",
-      createdAt: new Date().toISOString(),
-      payment: {
-        status: "paid",
-        cardLast4: payload.cardNumber ? payload.cardNumber.replace(/\D/g, "").slice(-4) : "0000",
-        method: payload.cardName || "Tarjeta"
-      }
-    };
-    setReservas((prev) => [reserva, ...prev]);
+  const userEmail = getUsuarioEmail();
+
+  const reserva = {
+    vueloId: payload.vueloId,
+  nombre: payload.nombre || payload.nombrePasajero || "Sin nombre", // ✅ usa el campo correcto
+    email: userEmail || "",
+    telefono: payload.telefono,
+    pasajeros: Number(payload.pasajeros),
+    asiento: payload.asiento || "Asignar",
+    precio_total: Number(payload.precio_total) || 0,
+    aerolinea: payload.aerolinea || "",
+    fecha_salida: payload.fecha_salida || "",
+    hora_salida: payload.hora_salida || "",
+    descripcion: payload.descripcion || "",
+    payment: {
+      status: "paid",
+      cardLast4: payload.cardNumber
+        ? payload.cardNumber.replace(/\D/g, "").slice(-4)
+        : "0000",
+      method: payload.cardName || "Tarjeta",
+    },
+  };
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reserva),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.error("❌ Error del backend:", errorData);
+      throw new Error(errorData.error || "Error al crear la reservación");
+    }
+
+    const nueva = await res.json();
+    console.log("✅ Reserva guardada correctamente:", nueva);
+
+    setReservas((prev) => [nueva, ...prev]);
     setFormOpen(false);
     setSuccessMessage("Reserva creada correctamente.");
     setTimeout(() => setSuccessMessage(null), 2500);
+  } catch (error) {
+    console.error("❌ Error al crear reserva:", error);
+    alert("Error al crear la reservación: " + error.message);
+  }
+};
+
+
+  // 🔹 Actualizar reserva (PUT)
+  const actualizarReserva = async (id, data) => {
+    try {
+      const body = {
+        nombre: data.nombrePasajero,
+        telefono: data.telefono,
+        pasajeros: data.pasajeros,
+        asiento: data.asiento,
+        precio_total: data.precio_total,
+        descripcion: data.descripcion,
+        payment: {
+          method: data.cardName,
+          cardLast4: data.cardNumber ? data.cardNumber.replace(/\D/g, "").slice(-4) : undefined
+        }
+      };
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const updated = await res.json();
+      setReservas((prev) => prev.map((r) => (r._id === id ? updated : r)));
+      setFormOpen(false);
+      setSuccessMessage("Reserva actualizada correctamente.");
+      setTimeout(() => setSuccessMessage(null), 2500);
+    } catch (error) {
+      console.error("Error al actualizar reserva:", error);
+      alert("No se pudo actualizar la reservación.");
+    }
   };
 
-  const actualizarReserva = (id, data) => {
-    setReservas((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              nombre: data.nombrePasajero,
-              telefono: data.telefono,
-              pasajeros: data.pasajeros,
-              asiento: data.asiento,
-              precio_total: data.precio_total,
-              descripcion: data.descripcion,
-              payment: {
-                ...r.payment,
-                method: data.cardName || r.payment.method,
-                cardLast4: data.cardNumber
-                  ? data.cardNumber.replace(/\D/g, "").slice(-4)
-                  : r.payment.cardLast4
-              }
-            }
-          : r
-      )
-    );
-    setFormOpen(false);
-    setSuccessMessage("Reserva actualizada correctamente.");
-    setTimeout(() => setSuccessMessage(null), 2500);
-  };
-
-  const cancelarReserva = (id) => {
+  // 🔹 Eliminar reserva (DELETE)
+  const cancelarReserva = async (id) => {
     if (!window.confirm("¿Confirmas cancelar esta reservación?")) return;
-    setReservas((prev) => prev.filter((r) => r.id !== id));
-    setSelected(null);
+    try {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      setReservas((prev) => prev.filter((r) => r._id !== id));
+      setSelected(null);
+    } catch (error) {
+      console.error("Error al eliminar reserva:", error);
+      alert("No se pudo eliminar la reservación.");
+    }
   };
 
   const openFormForVuelo = (vueloId) => {
@@ -215,7 +242,7 @@ export default function Reservaciones() {
     e.preventDefault();
     const payload = { ...form };
 
-    // Validaciones básicas
+    // Validaciones
     if (!payload.nombrePasajero.trim()) return alert("El nombre del pasajero es obligatorio");
     if (!payload.telefono.trim()) return alert("El teléfono es obligatorio");
     if (!payload.cardName) return alert("Selecciona el tipo de tarjeta");
@@ -224,7 +251,7 @@ export default function Reservaciones() {
     if (!payload.cvc.match(/^\d{3,4}$/)) return alert("CVC inválido");
 
     if (formMode === "create") crearReserva(payload);
-    else if (formMode === "edit" && selected) actualizarReserva(selected.id, payload);
+    else if (formMode === "edit" && selected) actualizarReserva(selected._id, payload);
   };
 
   return (
@@ -232,7 +259,9 @@ export default function Reservaciones() {
       <header className="reservaciones-header">
         <div className="left">
           <h1>Mis Reservaciones</h1>
-          <p className="subtitulo">Gestiona tus viajes — pago simulado, CRUD cliente.</p>
+          <p className="subtitulo">
+            Gestiona tus viajes — pago simulado, CRUD cliente.
+          </p>
         </div>
         <div className="actions-header">
           <button className="btn-prim" onClick={() => openFormForVuelo(null)}>
@@ -256,14 +285,17 @@ export default function Reservaciones() {
               {reservas.map((r) => {
                 const vuelo = getVueloById(r.vueloId) || {};
                 return (
-                  <li key={r.id} className="reserva-card">
+                  <li key={r._id} className="reserva-card">
                     <div className="reserva-left">
-                      <div className="reserva-titulo">{r.nombre || vuelo.nombre || "Reserva"}</div>
+                      <div className="reserva-titulo">
+                        {r.nombre || vuelo.nombre || "Reserva"}
+                      </div>
                       <div className="reserva-route">
                         {vuelo.origen || "—"} → {vuelo.destino || "—"}
                       </div>
                       <div className="reserva-fecha">
-                        {r.fecha_salida || vuelo.fecha_salida} • {r.hora_salida || vuelo.hora_salida}
+                        {r.fecha_salida || vuelo.fecha_salida} •{" "}
+                        {r.hora_salida || vuelo.hora_salida}
                       </div>
                       <div className="reserva-meta">
                         Pasajeros: {r.pasajeros} • Asiento: {r.asiento}
@@ -271,18 +303,30 @@ export default function Reservaciones() {
                     </div>
 
                     <div className="reserva-right">
-                      <div className="reserva-precio">{formatCurrency(r.precio_total)}</div>
+                      <div className="reserva-precio">
+                        {formatCurrency(r.precio_total)}
+                      </div>
                       <div className="reserva-actions">
-                        <button className="btn-sec" onClick={() => setSelected(r)}>
+                        <button
+                          className="btn-sec"
+                          onClick={() => setSelected(r)}
+                        >
                           Ver
                         </button>
                         <button
                           className="btn-prim"
-                          onClick={() => navigate("/vuelos", { state: { openModalId: r.vueloId } })}
+                          onClick={() =>
+                            navigate("/vuelos", {
+                              state: { openModalId: r.vueloId },
+                            })
+                          }
                         >
                           Ir a vuelo
                         </button>
-                        <button className="btn-danger" onClick={() => cancelarReserva(r.id)}>
+                        <button
+                          className="btn-danger"
+                          onClick={() => cancelarReserva(r._id)}
+                        >
                           Cancelar
                         </button>
                       </div>
@@ -302,7 +346,7 @@ export default function Reservaciones() {
             ) : (
               <ul className="mini-list">
                 {reservas.slice(0, 5).map((r) => (
-                  <li key={r.id}>
+                  <li key={r._id}>
                     <strong>{r.nombre}</strong>
                     <div className="muted small">
                       {r.fecha_salida} • {formatCurrency(r.precio_total)}
@@ -314,34 +358,72 @@ export default function Reservaciones() {
           </div>
           <div className="resumen-card">
             <h3>Ayuda rápida</h3>
-            <p className="muted small">Pago simulado. No guardamos tarjeta ni CVC.</p>
+            <p className="muted small">
+              Pago simulado. No guardamos tarjeta ni CVC.
+            </p>
           </div>
         </aside>
       </main>
 
       {/* Detalle Modal */}
       {selected && (
-        <div className="modal-fondo reserva-modal-fondo" onClick={() => setSelected(null)}>
-          <div className="modal-contenedor reserva-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
+        <div
+          className="modal-fondo reserva-modal-fondo"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="modal-contenedor reserva-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={() => setSelected(null)}>
+              ✕
+            </button>
             <h2>{selected.nombre}</h2>
             <p className="modal-sub">
-              {getVueloById(selected.vueloId)?.origen} → {getVueloById(selected.vueloId)?.destino} • {selected.fecha_salida}
+              {getVueloById(selected.vueloId)?.origen} →{" "}
+              {getVueloById(selected.vueloId)?.destino} •{" "}
+              {selected.fecha_salida}
             </p>
 
             <div className="modal-content-scroll">
               <div className="resumen-grid">
-                <div><strong>Aerolínea:</strong><div>{selected.aerolinea || "—"}</div></div>
-                <div><strong>Pasajeros:</strong><div>{selected.pasajeros}</div></div>
-                <div><strong>Asiento:</strong><div>{selected.asiento || "—"}</div></div>
-                <div><strong>Pago:</strong><div>{selected.payment?.method} ****{selected.payment?.cardLast4}</div></div>
+                <div>
+                  <strong>Aerolínea:</strong>
+                  <div>{selected.aerolinea || "—"}</div>
+                </div>
+                <div>
+                  <strong>Pasajeros:</strong>
+                  <div>{selected.pasajeros}</div>
+                </div>
+                <div>
+                  <strong>Asiento:</strong>
+                  <div>{selected.asiento || "—"}</div>
+                </div>
+                <div>
+                  <strong>Pago:</strong>
+                  <div>
+                    {selected.payment?.method} ****{selected.payment?.cardLast4}
+                  </div>
+                </div>
               </div>
-              <p className="descripcion-modal">{selected.descripcion || "No hay descripción adicional."}</p>
+              <p className="descripcion-modal">
+                {selected.descripcion || "No hay descripción adicional."}
+              </p>
             </div>
 
             <div className="modal-actions">
-              <button className="btn-sec" onClick={() => openEditForm(selected)}>Editar</button>
-              <button className="btn-danger" onClick={() => cancelarReserva(selected.id)}>Cancelar</button>
+              <button
+                className="btn-sec"
+                onClick={() => openEditForm(selected)}
+              >
+                Editar
+              </button>
+              <button
+                className="btn-danger"
+                onClick={() => cancelarReserva(selected.id)}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
@@ -349,16 +431,34 @@ export default function Reservaciones() {
 
       {/* Form modal */}
       {formOpen && (
-        <div className="modal-fondo reserva-modal-fondo" onClick={() => setFormOpen(false)}>
-          <div className="modal-contenedor reserva-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setFormOpen(false)}>✕</button>
-            <h2>{formMode === "create" ? "Nueva reservación" : "Editar reservación"}</h2>
+        <div
+          className="modal-fondo reserva-modal-fondo"
+          onClick={() => setFormOpen(false)}
+        >
+          <div
+            className="modal-contenedor reserva-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={() => setFormOpen(false)}>
+              ✕
+            </button>
+            <h2>
+              {formMode === "create"
+                ? "Nueva reservación"
+                : "Editar reservación"}
+            </h2>
 
             <div className="modal-content-scroll">
               <form className="form-reserva" onSubmit={onSubmit}>
                 <div className="form-row">
                   <label>Vuelo</label>
-                  <input readOnly value={getVueloById(form.vueloId)?.nombre || "Selecciona desde Vuelos"} />
+                  <input
+                    readOnly
+                    value={
+                      getVueloById(form.vueloId)?.nombre ||
+                      "Selecciona desde Vuelos"
+                    }
+                  />
                 </div>
 
                 <div className="form-row">
@@ -366,7 +466,9 @@ export default function Reservaciones() {
                   <input
                     required
                     value={form.nombrePasajero}
-                    onChange={(e) => setForm((s) => ({ ...s, nombrePasajero: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((s) => ({ ...s, nombrePasajero: e.target.value }))
+                    }
                   />
                 </div>
 
@@ -375,7 +477,9 @@ export default function Reservaciones() {
                     <label>Teléfono</label>
                     <input
                       value={form.telefono}
-                      onChange={(e) => setForm((s) => ({ ...s, telefono: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((s) => ({ ...s, telefono: e.target.value }))
+                      }
                     />
                   </div>
                   <div>
@@ -387,7 +491,11 @@ export default function Reservaciones() {
                       onChange={(e) => {
                         const p = Math.max(1, Number(e.target.value || 1));
                         const v = getVueloById(form.vueloId);
-                        setForm((s) => ({ ...s, pasajeros: p, precio_total: computePrecio(v, p) }));
+                        setForm((s) => ({
+                          ...s,
+                          pasajeros: p,
+                          precio_total: computePrecio(v, p),
+                        }));
                       }}
                     />
                   </div>
@@ -397,7 +505,9 @@ export default function Reservaciones() {
                   <label>Asiento (opcional)</label>
                   <input
                     value={form.asiento}
-                    onChange={(e) => setForm((s) => ({ ...s, asiento: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((s) => ({ ...s, asiento: e.target.value }))
+                    }
                   />
                 </div>
 
@@ -409,7 +519,9 @@ export default function Reservaciones() {
                   <select
                     required
                     value={form.cardName}
-                    onChange={(e) => setForm((s) => ({ ...s, cardName: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((s) => ({ ...s, cardName: e.target.value }))
+                    }
                   >
                     <option value="">Selecciona una tarjeta</option>
                     <option value="Visa">Visa</option>
@@ -428,7 +540,12 @@ export default function Reservaciones() {
                     <input
                       placeholder="1234123412341234"
                       value={form.cardNumber}
-                      onChange={(e) => setForm((s) => ({ ...s, cardNumber: e.target.value.replace(/\D/g, "") }))}
+                      onChange={(e) =>
+                        setForm((s) => ({
+                          ...s,
+                          cardNumber: e.target.value.replace(/\D/g, ""),
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -436,7 +553,9 @@ export default function Reservaciones() {
                     <input
                       placeholder="08/26"
                       value={form.expiry}
-                      onChange={(e) => setForm((s) => ({ ...s, expiry: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((s) => ({ ...s, expiry: e.target.value }))
+                      }
                     />
                   </div>
                 </div>
@@ -447,7 +566,12 @@ export default function Reservaciones() {
                     <input
                       placeholder="123"
                       value={form.cvc}
-                      onChange={(e) => setForm((s) => ({ ...s, cvc: e.target.value.replace(/\D/g, "") }))}
+                      onChange={(e) =>
+                        setForm((s) => ({
+                          ...s,
+                          cvc: e.target.value.replace(/\D/g, ""),
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -457,14 +581,30 @@ export default function Reservaciones() {
                 </div>
 
                 <div className="modal-actions">
-                  <button type="submit" className="btn-prim" disabled={processingPayment}>
-                    {processingPayment ? "Procesando..." : formMode === "create" ? "Pagar y reservar" : "Guardar cambios"}
+                  <button
+                    type="submit"
+                    className="btn-prim"
+                    disabled={processingPayment}
+                  >
+                    {processingPayment
+                      ? "Procesando..."
+                      : formMode === "create"
+                      ? "Pagar y reservar"
+                      : "Guardar cambios"}
                   </button>
-                  <button type="button" className="btn-sec" onClick={() => setFormOpen(false)}>Cancelar</button>
+                  <button
+                    type="button"
+                    className="btn-sec"
+                    onClick={() => setFormOpen(false)}
+                  >
+                    Cancelar
+                  </button>
                 </div>
               </form>
 
-              {successMessage && <div className="success-banner">{successMessage}</div>}
+              {successMessage && (
+                <div className="success-banner">{successMessage}</div>
+              )}
             </div>
           </div>
         </div>
