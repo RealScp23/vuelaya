@@ -1,4 +1,4 @@
-// Importaciones
+//server.js
 require("dotenv").config(); // Para leer variables del .env
 const express = require("express");
 const mongoose = require("mongoose");
@@ -20,6 +20,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Rutas
 app.use("/usuarios", require("./routes/usuarios"));
+app.use("/reservaciones", require("./routes/reservaciones"));
 
 // Ruta principal
 app.get("/", (req, res) => {
