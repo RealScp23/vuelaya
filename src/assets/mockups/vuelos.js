@@ -11,7 +11,7 @@ export const vuelos = [
     aerolinea: "AeroMéxico",
     precio: 3500,
     duracion: "2h 15m",
-    image: "https://ik.imagekit.io//cancun,%20quintana%20roo.jpg?updatedAt=1760848725943",
+    image: "https://ik.imagekit.io/qmfie1kaxy/cancun-quintana-roo.jpg?updatedAt=1760849831492",
   },
   {
     id: 2,

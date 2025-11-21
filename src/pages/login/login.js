@@ -60,6 +60,7 @@ function Login() {
         const data = await res.json();
 
         if (res.ok) {
+          console.log("RESPUESTA LOGIN:", JSON.stringify(data, null, 2));
           login(data.usuario); // ✅ guarda usuario en contexto
           navigate("/home"); // redirige al home
         } else setMessage(data.error || "Credenciales incorrectas");
