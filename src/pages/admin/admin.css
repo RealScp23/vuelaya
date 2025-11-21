@@ -1,0 +1,151 @@
+:root {
+  --primary: #00bfa5;
+  --primary-dark: #008e76;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --shadow: rgba(10,20,30,0.10);
+}
+
+/* ===========================
+   PANEL ADMIN FLOTANTE DERECHA
+   =========================== */
+.admin-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  width: 40vw;
+  height: 100vh;
+  background: var(--card);
+  padding: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  border-left: 2px solid #eef2f6;
+  box-shadow: -10px 0 25px var(--shadow);
+  overflow: hidden;
+
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Títulos */
+.admin-container h1 {
+  margin: 0;
+  margin-top: 10px;  /* ✔ ahora sí funciona */
+  color: var(--primary);
+  font-size: 1.4rem;
+}
+
+.admin-container h2 {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 12px 0 8px 0;  /* ✔ título más abajo */
+}
+
+/* ===========================
+   SCROLL SOLO VERTICAL
+   =========================== */
+.admin-scroll-area {
+  flex: 1;
+  overflow-y: auto;   /* ✔ solo vertical */
+  overflow-x: hidden; /* ❌ sin horizontal */
+  padding-bottom: 12px;
+}
+
+/* ===========================
+   TABLA
+   =========================== */
+.admin-table {
+  width: 100%;
+  max-width: 50vw; /* ✔ tabla solo la mitad de la pantalla */
+  border-collapse: collapse;
+
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(10,20,30,0.05);
+}
+
+.admin-table thead {
+  background: var(--primary);
+  color: #fff;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+
+  white-space: normal; /* ✔ permite salto de línea */
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background: #f8fcfc;
+}
+
+.admin-table tbody tr:hover {
+  background: #e6f7f2;
+  transition: 0.15s;
+}
+
+
+/* ===========================
+   BOTONES
+   =========================== */
+.admin-table button {
+  padding: 4px 6px;     /* ⬅️ más pequeño */
+  border-radius: 6px;   /* ⬅️ más compacto */
+  border: none;
+  cursor: pointer;
+  font-size: 11px;      /* ⬅️ letra más pequeña */
+  font-weight: 600;
+  transition: .2s;
+  /* Separación vertical entre botones */
+  margin: 4px 0;   /* ← espacio arriba y abajo */
+}
+
+.admin-table button:nth-child(1) {
+  background: var(--primary);
+  color: white;
+}
+.admin-table button:nth-child(1):hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.admin-table button:nth-child(2) {
+  background: transparent;
+  border: 1px solid #cdeeea;
+  color: var(--primary-dark);
+}
+.admin-table button:nth-child(2):hover {
+  background: #e6f7f2;
+}
+
+.admin-table button:nth-child(3) {
+  background: transparent;
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+}
+.admin-table button:nth-child(3):hover {
+  background: #ffecec;
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+@media (max-width: 900px) {
+  .admin-container {
+    width: 100%;
+    height: auto;
+    position: relative;
+    box-shadow: none;
+    border-left: none;
+  }
+
+  .admin-scroll-area {
+    max-height: 70vh;
+  }
+}
