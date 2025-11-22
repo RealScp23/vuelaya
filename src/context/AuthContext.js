@@ -3,39 +3,51 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
-/**
- * AuthProvider maneja la sesión del usuario y la guarda en localStorage.
- */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // Cargar usuario guardado al iniciar
+  // ⭐ Cargar usuario guardado por clave única
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
+    const lastEmail = localStorage.getItem("lastLoggedEmail");
+
+    if (lastEmail) {
+      const savedUser = localStorage.getItem(`user_${lastEmail}`);
+      if (savedUser) setUser(JSON.parse(savedUser));
+    }
   }, []);
 
-  // Guardar usuario cuando cambie
+  // ⭐ Guardar usuario en su propia clave única
   useEffect(() => {
-    if (user) localStorage.setItem("user", JSON.stringify(user));
-    else localStorage.removeItem("user");
+    if (user) {
+      localStorage.setItem(`user_${user.correo}`, JSON.stringify(user));
+      localStorage.setItem("lastLoggedEmail", user.correo);
+    }
   }, [user]);
 
   // 🔥 Login: guardar datos del usuario
   const login = (userData) => {
-    setUser({
+    const formatted = {
       nombre: userData.nombre,
       correo: userData.correo,
-      numero: userData.numero,       // ← NUEVO CAMPO
-      direccion: userData.direccion, // ← NUEVO CAMPO
+      numero: userData.numero,
+      direccion: userData.direccion,
       foto: userData.foto,
       rol: userData.rol,
       _id: userData._id,
-    });
+    };
+
+    setUser(formatted);
+
+    // Guardar al usuario correcto inmediatamente
+    localStorage.setItem(`user_${userData.correo}`, JSON.stringify(formatted));
+    localStorage.setItem("lastLoggedEmail", userData.correo);
   };
 
-  // Logout
-  const logout = () => setUser(null);
+  // Logout: solo borra la sesión activa
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("lastLoggedEmail");
+  };
 
   const isAuthenticated = !!user;
 
@@ -48,5 +60,4 @@ export function AuthProvider({ children }) {
   );
 }
 
-// Hook para usar AuthContext
 export const useAuth = () => useContext(AuthContext);
