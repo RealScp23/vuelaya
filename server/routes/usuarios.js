@@ -20,31 +20,29 @@ router.get("/", async (req, res) => {
 // ===============================
 router.post("/registro", async (req, res) => {
   try {
-    const { nombre, correo, contraseña } = req.body;
+    const { nombre, correo, contraseña, numero, direccion } = req.body;
 
     const nuevoUsuario = new Usuario({
       nombre,
       correo,
       contraseña,
-      rol: "cliente"
+      numero,
+      direccion,
+      rol: "cliente",
     });
 
     await nuevoUsuario.save();
-
-    res.status(201).json({
-      message: "Usuario registrado correctamente",
-      usuario: nuevoUsuario
-    });
+    res.json({ mensaje: "Usuario registrado", usuario: nuevoUsuario });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: "Error al registrar usuario" });
   }
 });
 
 // ===============================
-//        LOGIN
+//            LOGIN
 // ===============================
 router.post("/login", async (req, res) => {
-  const { correo, contraseña } = req.body;
+  const { correo, contraseña } = req.body; // <- AHORA SE USA "", no "contraseña"
 
   try {
     const usuario = await Usuario.findOne({ correo });
@@ -53,6 +51,7 @@ router.post("/login", async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
+    // Comparamos contra usuario. que es lo que está guardado en MongoDB
     if (usuario.contraseña !== contraseña) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
@@ -63,10 +62,14 @@ router.post("/login", async (req, res) => {
         id: usuario._id,
         nombre: usuario.nombre,
         correo: usuario.correo,
+        numero: usuario.numero,
+        direccion: usuario.direccion,
+        foto: usuario.foto,
         rol: usuario.rol,
       },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Error al iniciar sesión" });
   }
 });
@@ -131,7 +134,7 @@ router.put("/:id/rol", async (req, res) => {
 
     res.json({
       message: "Rol actualizado correctamente",
-      usuario
+      usuario,
     });
   } catch (error) {
     console.error("❌ Error al actualizar rol:", error);

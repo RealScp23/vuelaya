@@ -11,14 +11,9 @@ const Cuenta = () => {
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [wishlist, setWishlist] = useState([]);
+  const { user } = useAuth();
+  console.log("USUARIO EN PERFIL:", user);
 
-  const usuario = {
-    nombre: "Antonio Pérez",
-    correo: "antonio@example.com",
-    telefono: "+52 123 456 7890",
-    direccion: "Calle Principal 123, Ciudad de México",
-    foto: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-  };
 
   const historial = [
     { id: 1, descripcion: "Vuelo CDMX ✈ Cancún - Aeroméxico", fecha: "12/10/2025" },
@@ -70,16 +65,16 @@ const Cuenta = () => {
       <div className="cuenta-izquierda">
         <div>
           <div className="foto-perfil-container">
-            <img src={usuario.foto} alt="Foto de perfil" className="foto-perfil" />
+            <img src={user.foto} alt="Foto de perfil" className="foto-perfil" />
           </div>
 
           <h1 className="cuenta-titulo">Mi Cuenta</h1>
 
           <div className="cuenta-info">
-            <p><strong>Nombre:</strong> {usuario.nombre}</p>
-            <p><strong>Correo:</strong> {usuario.correo}</p>
-            <p><strong>Teléfono:</strong> {usuario.telefono}</p>
-            <p><strong>Dirección:</strong> {usuario.direccion}</p>
+            <p><strong>Nombre:</strong> {user.nombre}</p>
+            <p><strong>Correo:</strong> {user.correo}</p>
+            <p><strong>Teléfono:</strong> {user.numero}</p>
+            <p><strong>Dirección:</strong> {user.direccion}</p>
           </div>
         </div>
 

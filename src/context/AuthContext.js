@@ -4,36 +4,49 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 const AuthContext = createContext();
 
 /**
- * AuthProvider envuelve toda la app y gestiona la sesión del usuario.
- * Guarda el usuario en localStorage y ofrece funciones login/logout.
+ * AuthProvider maneja la sesión del usuario y la guarda en localStorage.
  */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // Cargar usuario guardado al iniciar la app
+  // Cargar usuario guardado al iniciar
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
-  // Guardar o eliminar usuario cuando cambie
+  // Guardar usuario cuando cambie
   useEffect(() => {
     if (user) localStorage.setItem("user", JSON.stringify(user));
     else localStorage.removeItem("user");
   }, [user]);
 
-  // Funciones de autenticación
-  const login = (userData) => setUser(userData);
+  // 🔥 Login: guardar datos del usuario
+  const login = (userData) => {
+    setUser({
+      nombre: userData.nombre,
+      correo: userData.correo,
+      numero: userData.numero,       // ← NUEVO CAMPO
+      direccion: userData.direccion, // ← NUEVO CAMPO
+      foto: userData.foto,
+      rol: userData.rol,
+      _id: userData._id,
+    });
+  };
+
+  // Logout
   const logout = () => setUser(null);
 
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isAuthenticated }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Hook personalizado para usar el contexto
+// Hook para usar AuthContext
 export const useAuth = () => useContext(AuthContext);
