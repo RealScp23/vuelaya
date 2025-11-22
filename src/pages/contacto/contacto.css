@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.contacto-container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 3rem 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.contacto-container h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  color: #000;
+}
+
+.contacto-sub {
+  color: #555;
+  margin-bottom: 2rem;
+}
+
+/* ----------- GRID PRINCIPAL ----------- */
+.contacto-content {
+  display: flex;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+/* ----------- TARJETA DE INFORMACIÓN ----------- */
+.contacto-info {
+  flex: 1;
+  min-width: 300px;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.contacto-info h2 {
+  color: #00bfa5;
+  margin-bottom: 1rem;
+}
+
+.contacto-info p {
+  margin: 0.4rem 0;
+  color: #333;
+}
+
+/* ----------- FORMULARIO ----------- */
+.contacto-form {
+  flex: 1;
+  min-width: 300px;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contacto-form h2 {
+  color: #00bfa5;
+  margin-bottom: 0.5rem;
+}
+
+/* Inputs estilo Home */
+.contacto-form input,
+.contacto-form textarea {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 0.8rem;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.contacto-form input:focus,
+.contacto-form textarea:focus {
+  border-color: #00bfa5;
+  box-shadow: 0 4px 15px rgba(0,191,165,0.2);
+}
+
+.contacto-form textarea {
+  resize: none;
+  height: 120px;
+}
+
+/* Botón estilo Home */
+.contacto-form button {
+  background-color: #000;
+  color: #fff;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+}
+
+.contacto-form button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Mensaje enviado */
+.mensaje-enviado {
+  margin-top: 0.5rem;
+  color: #00bfa5;
+  font-weight: 600;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.h1 {
+  text-align: center;
+  color: #00bfa5;
+  font-size: 2rem;
+  margin-bottom: 24px;
+}
