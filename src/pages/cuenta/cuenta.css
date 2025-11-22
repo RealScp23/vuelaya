@@ -488,3 +488,32 @@ html, body {
 /* Evitar scroll horizontal global */
 html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow-x: hidden; box-sizing: border-box; }
 * { box-sizing: border-box; max-width: 100%; }
+
+.avatar-popup {
+  position: absolute;
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  display: flex;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  margin-top: 10px;
+  z-index: 10;
+}
+
+.avatar-item {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s;
+  border: 3px solid transparent;
+}
+
+.avatar-item:hover {
+  transform: scale(1.1);
+}
+
+.avatar-activo {
+  border-color: #007bff;
+}

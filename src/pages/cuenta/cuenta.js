@@ -1,19 +1,30 @@
 // === CUENTA.JS ===
-import React, { useState, useEffect } from "react";
+import React, { useState, // eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./cuenta.css";
+import { useAuth } from "../../context/AuthContext";
 import { vuelos } from "../../assets/mockups/vuelos";
-import { useAuth } from "../../context/AuthContext"; // ✅ Importa el contexto
+
+// 🆕 Importar avatares
+import avatar1 from "../../assets/avatars/avatar1.png";
+import avatar2 from "../../assets/avatars/avatar2.png";
+import avatar3 from "../../assets/avatars/avatar3.png";
+import avatar4 from "../../assets/avatars/avatar4.png";
 
 const Cuenta = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth(); // ✅ Obtén logout del contexto
+  const { logout } = useAuth();
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [wishlist, setWishlist] = useState([]);
   const { user } = useAuth();
   console.log("USUARIO EN PERFIL:", user);
 
+  // 🆕 Estado del avatar seleccionado
+  const savedAvatar = localStorage.getItem("avatarSeleccionado");
+  const [avatarSeleccionado, setAvatarSeleccionado] = useState(savedAvatar || user?.foto || avatar1);
+  const [mostrarAvatares, setMostrarAvatares] = useState(false);
 
   const historial = [
     { id: 1, descripcion: "Vuelo CDMX ✈ Cancún - Aeroméxico", fecha: "12/10/2025" },
@@ -26,7 +37,7 @@ const Cuenta = () => {
     { id: 8, descripcion: "Vuelo Cancún ✈ París - Air France", fecha: "10/07/2025" },
   ];
 
-  useEffect(() => {
+    useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("wishlist") || "[]");
       const mapped = saved.map((w) => {
@@ -39,12 +50,22 @@ const Cuenta = () => {
     }
   }, []);
 
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
+  if (user) {
+    localStorage.setItem("avatarSeleccionado", avatarSeleccionado);
+    // si necesitas persistir updatedUser también hazlo aquí
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [avatarSeleccionado]);
+
   const handleCerrarSesion = () => {
     setMostrarConfirmacion(true);
   };
 
   const confirmarCerrarSesion = () => {
-    logout(); // ✅ Usa el método del contexto
+    logout();
     navigate("/login", { replace: true });
   };
 
@@ -65,7 +86,29 @@ const Cuenta = () => {
       <div className="cuenta-izquierda">
         <div>
           <div className="foto-perfil-container">
-            <img src={user.foto} alt="Foto de perfil" className="foto-perfil" />
+            <img
+              src={avatarSeleccionado}
+              alt="Foto de perfil"
+              className="foto-perfil"
+              onClick={() => setMostrarAvatares((prev) => !prev)}
+            />
+
+            {mostrarAvatares && (
+              <div className="avatar-popup">
+                {[avatar1, avatar2, avatar3, avatar4].map((av, idx) => (
+                  <img
+                    key={idx}
+                    src={av}
+                    alt="avatar"
+                    className={`avatar-item ${avatarSeleccionado === av ? "avatar-activo" : ""}`}
+                    onClick={() => {
+                      setAvatarSeleccionado(av);
+                      setMostrarAvatares(false);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <h1 className="cuenta-titulo">Mi Cuenta</h1>
@@ -78,11 +121,9 @@ const Cuenta = () => {
           </div>
         </div>
 
+        {/* 🆕 Selector de avatares */}
         <div className="lista-favoritos-texto">Lista de favoritos</div>
-        <button
-          className="toggle-deseados"
-          onClick={() => setShowWishlist(true)}
-        >
+        <button className="toggle-deseados" onClick={() => setShowWishlist(true)}>
           Ver favoritos ({wishlist.length})
         </button>
 
@@ -113,12 +154,8 @@ const Cuenta = () => {
           <div className="modal-contenedor">
             <h2>¿Deseas cerrar sesión?</h2>
             <div className="modal-botones">
-              <button className="btn-cancelar" onClick={cancelarCerrarSesion}>
-                Cancelar
-              </button>
-              <button className="btn-confirmar" onClick={confirmarCerrarSesion}>
-                Aceptar
-              </button>
+              <button className="btn-cancelar" onClick={cancelarCerrarSesion}>Cancelar</button>
+              <button className="btn-confirmar" onClick={confirmarCerrarSesion}>Aceptar</button>
             </div>
           </div>
         </div>
@@ -128,13 +165,9 @@ const Cuenta = () => {
       {showWishlist && (
         <div className="wishlist-modal-fondo">
           <div className="wishlist-modal">
-            <button
-              className="wishlist-close"
-              onClick={() => setShowWishlist(false)}
-            >
-              ×
-            </button>
+            <button className="wishlist-close" onClick={() => setShowWishlist(false)}>×</button>
             <h2>Tus Favoritos</h2>
+
             {wishlist.length === 0 ? (
               <p className="wishlist-empty">No hay vuelos en tu lista de deseados.</p>
             ) : (
@@ -148,6 +181,7 @@ const Cuenta = () => {
                         <div className="deseado-sub">{w.origen} → {w.destino}</div>
                       </div>
                     </div>
+
                     <div className="deseado-actions">
                       <button
                         className="ver-detalle"
@@ -158,12 +192,8 @@ const Cuenta = () => {
                       >
                         Ir a vuelo
                       </button>
-                      <button
-                        onClick={() => removeFromWishlist(w.id)}
-                        className="quitar-deseado"
-                      >
-                        Quitar
-                      </button>
+
+                      <button onClick={() => removeFromWishlist(w.id)} className="quitar-deseado">Quitar</button>
                     </div>
                   </li>
                 ))}
