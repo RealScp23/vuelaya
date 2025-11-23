@@ -1,27 +1,14 @@
-// models/usuarios.js
 const mongoose = require("mongoose");
 
-const usuarioSchema = new mongoose.Schema({
-  nombre: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  correo: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true
-  },
-  contraseña: {
-    type: String,
-    required: true
-  },
-  rol: {
-    type: String,
-    enum: ["cliente", "admin"],
-    default: "cliente"
-  },
-}, { timestamps: true });
+const UsuarioSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  correo: { type: String, required: true },
+  contraseña: { type: String, required: true },
+  numero: { type: String, required: true },
+  direccion: { type: String, required: true },
+  foto: { type: String, default: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" },
+  rol: { type: String, default: "usuario" },
+});
 
-module.exports = mongoose.model("Usuario", usuarioSchema);
+
+module.exports = mongoose.model("Usuario", UsuarioSchema);

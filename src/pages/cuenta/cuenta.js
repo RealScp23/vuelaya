@@ -2,94 +2,193 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./cuenta.css";
-import { vuelos } from "../../assets/mockups/vuelos";
-import { useAuth } from "../../context/AuthContext"; // ✅ Importa el contexto
+import { useAuth } from "../../context/AuthContext";
+
+// Importar avatares
+import avatar1 from "../../assets/avatars/avatar1.png";
+import avatar2 from "../../assets/avatars/avatar2.png";
+import avatar3 from "../../assets/avatars/avatar3.png";
+import avatar4 from "../../assets/avatars/avatar4.png";
 
 const Cuenta = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth(); // ✅ Obtén logout del contexto
+  const { user, logout } = useAuth();
+
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [wishlist, setWishlist] = useState([]);
-
-  const usuario = {
-    nombre: "Antonio Pérez",
-    correo: "antonio@example.com",
-    telefono: "+52 123 456 7890",
-    direccion: "Calle Principal 123, Ciudad de México",
-    foto: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-  };
-
-  const historial = [
-    { id: 1, descripcion: "Vuelo CDMX ✈ Cancún - Aeroméxico", fecha: "12/10/2025" },
-    { id: 2, descripcion: "Vuelo Cancún ✈ Guadalajara - Volaris", fecha: "20/09/2025" },
-    { id: 3, descripcion: "Vuelo Monterrey ✈ CDMX - VivaAerobus", fecha: "05/09/2025" },
-    { id: 4, descripcion: "Vuelo CDMX ✈ Nueva York - American Airlines", fecha: "15/08/2025" },
-    { id: 5, descripcion: "Vuelo Tijuana ✈ CDMX - Aeroméxico", fecha: "01/08/2025" },
-    { id: 6, descripcion: "Vuelo CDMX ✈ Madrid - Iberia", fecha: "25/07/2025" },
-    { id: 7, descripcion: "Vuelo Guadalajara ✈ Los Ángeles - Delta", fecha: "15/07/2025" },
-    { id: 8, descripcion: "Vuelo Cancún ✈ París - Air France", fecha: "10/07/2025" },
-  ];
+  const [mostrarAvatares, setMostrarAvatares] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("wishlist") || "[]");
-      const mapped = saved.map((w) => {
-        const full = vuelos.find((v) => v.id === w.id);
-        return full ? { ...full } : w;
-      });
-      setWishlist(mapped);
-    } catch {
-      setWishlist([]);
+    if (user?.correo) {
+      const saved = JSON.parse(
+        localStorage.getItem(`wishlist_${user.correo}`) || "[]"
+      );
+      setWishlist(saved);
     }
-  }, []);
+  }, [user?.correo]);
 
-  const handleCerrarSesion = () => {
-    setMostrarConfirmacion(true);
-  };
+  // Avatar por usuario (ANTES del return condicional)
+  const savedAvatar = localStorage.getItem(
+    `avatarSeleccionado_${user?.correo || "temp"}`
+  );
+
+  const [avatarSeleccionado, setAvatarSeleccionado] = useState(
+    savedAvatar || user?.foto || avatar1
+  );
+
+  // Guardar avatar sin modificar user
+  useEffect(() => {
+    if (user?.correo) {
+      localStorage.setItem(
+        `avatarSeleccionado_${user.correo}`,
+        avatarSeleccionado
+      );
+    }
+  }, [avatarSeleccionado, user?.correo]);
+
+  // ❗ ESTE RETURN SIEMPRE VA DESPUÉS DE LOS HOOKS
+  if (!user) return <p>Cargando usuario...</p>;
+
+  const handleCerrarSesion = () => setMostrarConfirmacion(true);
 
   const confirmarCerrarSesion = () => {
-    logout(); // ✅ Usa el método del contexto
+    logout();
     navigate("/login", { replace: true });
   };
 
-  const cancelarCerrarSesion = () => {
-    setMostrarConfirmacion(false);
-  };
+  const cancelarCerrarSesion = () => setMostrarConfirmacion(false);
 
   const removeFromWishlist = (id) => {
-    const current = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    const current = JSON.parse(
+      localStorage.getItem(`wishlist_${user.correo}`) || "[]"
+    );
     const next = current.filter((w) => w.id !== id);
-    localStorage.setItem("wishlist", JSON.stringify(next));
-    setWishlist((prev) => prev.filter((p) => p.id !== id));
+
+    localStorage.setItem(`wishlist_${user.correo}`, JSON.stringify(next));
+    setWishlist(next);
   };
 
   return (
     <div className="cuenta-container">
-      {/* Panel izquierdo */}
       <div className="cuenta-izquierda">
         <div>
           <div className="foto-perfil-container">
-            <img src={usuario.foto} alt="Foto de perfil" className="foto-perfil" />
+            <img
+              src={avatarSeleccionado}
+              alt="Foto de perfil"
+              className="foto-perfil"
+              onClick={() => setMostrarAvatares((prev) => !prev)}
+            />
+
+            {mostrarAvatares && (
+              <div className="avatar-popup">
+                {[avatar1, avatar2, avatar3, avatar4].map((av, idx) => (
+                  <img
+                    key={idx}
+                    src={av}
+                    alt="avatar"
+                    className={`avatar-item ${
+                      avatarSeleccionado === av ? "avatar-activo" : ""
+                    }`}
+                    onClick={() => {
+                      setAvatarSeleccionado(av);
+                      setMostrarAvatares(false);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <h1 className="cuenta-titulo">Mi Cuenta</h1>
 
           <div className="cuenta-info">
-            <p><strong>Nombre:</strong> {usuario.nombre}</p>
-            <p><strong>Correo:</strong> {usuario.correo}</p>
-            <p><strong>Teléfono:</strong> {usuario.telefono}</p>
-            <p><strong>Dirección:</strong> {usuario.direccion}</p>
+            <p>
+              <strong>Nombre:</strong> {user.nombre}
+            </p>
+            <p>
+              <strong>Correo:</strong> {user.correo}
+            </p>
+            <p>
+              <strong>Teléfono:</strong> {user.numero}
+            </p>
+            <p>
+              <strong>Dirección:</strong> {user.direccion}
+            </p>
           </div>
         </div>
 
         <div className="lista-favoritos-texto">Lista de favoritos</div>
+
         <button
           className="toggle-deseados"
           onClick={() => setShowWishlist(true)}
         >
           Ver favoritos ({wishlist.length})
         </button>
+        {showWishlist && (
+          <div
+            className="wishlist-modal-fondo"
+            onClick={() => setShowWishlist(false)}
+          >
+            <div
+              className="wishlist-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="wishlist-close"
+                onClick={() => setShowWishlist(false)}
+              >
+                ✕
+              </button>
+
+              <h2>Mis favoritos</h2>
+
+              {wishlist.length === 0 ? (
+                <p className="wishlist-empty">No tienes favoritos guardados.</p>
+              ) : (
+                <div className="wishlist-grid">
+                  {wishlist.map((w) => (
+                    <div key={w.id} className="wishlist-card">
+                      <img src={w.image} className="wishlist-thumb" />
+
+                      <div className="wishlist-info">
+                        <h4>{w.nombre}</h4>
+                        <p>
+                          {w.origen} → {w.destino}
+                        </p>
+
+                        <button
+                          className="wishlist-vermas"
+                          onClick={() => {
+                            setShowWishlist(false);
+                            navigate("/vuelos", {
+                              state: { openModalId: w.id },
+                            });
+                          }}
+                        >
+                          Ver vuelo
+                        </button>
+                      </div>
+
+                      <button
+                        className="quitar-deseado"
+                        onClick={() => removeFromWishlist(w.id)}
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* BOTONES FINALES */}
+              <div className="wishlist-bottom-buttons">
+              </div>
+            </div>
+          </div>
+        )}
 
         <button className="cerrar-sesion" onClick={handleCerrarSesion}>
           Cerrar sesión
@@ -101,15 +200,6 @@ const Cuenta = () => {
         <div className="historial-header">
           <h2 className="historial-titulo">Historial de Vuelos</h2>
         </div>
-
-        <ul className="historial-lista">
-          {historial.map((item) => (
-            <li key={item.id} className="historial-item">
-              <p>{item.descripcion}</p>
-              <span>{item.fecha}</span>
-            </li>
-          ))}
-        </ul>
       </div>
 
       {/* Modal de confirmación */}
@@ -125,55 +215,6 @@ const Cuenta = () => {
                 Aceptar
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de wishlist */}
-      {showWishlist && (
-        <div className="wishlist-modal-fondo">
-          <div className="wishlist-modal">
-            <button
-              className="wishlist-close"
-              onClick={() => setShowWishlist(false)}
-            >
-              ×
-            </button>
-            <h2>Tus Favoritos</h2>
-            {wishlist.length === 0 ? (
-              <p className="wishlist-empty">No hay vuelos en tu lista de deseados.</p>
-            ) : (
-              <div className="wishlist-grid">
-                {wishlist.map((w) => (
-                  <li key={w.id} className="deseado-item">
-                    <div className="deseado-left">
-                      <img src={w.image} alt={w.nombre} className="deseado-thumb" />
-                      <div>
-                        <div className="deseado-title">{w.nombre}</div>
-                        <div className="deseado-sub">{w.origen} → {w.destino}</div>
-                      </div>
-                    </div>
-                    <div className="deseado-actions">
-                      <button
-                        className="ver-detalle"
-                        onClick={() => {
-                          setShowWishlist(false);
-                          navigate("/vuelos", { state: { openModalId: w.id } });
-                        }}
-                      >
-                        Ir a vuelo
-                      </button>
-                      <button
-                        onClick={() => removeFromWishlist(w.id)}
-                        className="quitar-deseado"
-                      >
-                        Quitar
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       )}

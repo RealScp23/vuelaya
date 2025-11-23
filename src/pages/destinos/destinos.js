@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { vuelos } from "../../assets/mockups/vuelos";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./destinos.css";
+import { useAuth } from "../../context/AuthContext";
 
 // Hook para leer query params
 function useQuery() {
@@ -24,14 +25,14 @@ function getEstimatedDuration(origen = "", destino = "") {
   const d = destino.toLowerCase();
 
   const map = {
-    "cdmx_cancún": "2h 45m",
-    "cancún_guadalajara": "1h 50m",
-    "monterrey_cdmx": "1h 20m",
+    cdmx_cancún: "2h 45m",
+    cancún_guadalajara: "1h 50m",
+    monterrey_cdmx: "1h 20m",
     "cdmx_nueva york": "5h 10m",
-    "cdmx_madrid": "10h 30m",
+    cdmx_madrid: "10h 30m",
     "guadalajara_los ángeles": "4h 10m",
-    "cancún_parís": "11h 00m",
-    "tijuana_cdmx": "3h 10m"
+    cancún_parís: "11h 00m",
+    tijuana_cdmx: "3h 10m",
   };
 
   const key = `${o}_${d}`;
@@ -40,7 +41,11 @@ function getEstimatedDuration(origen = "", destino = "") {
   if (d.includes("madrid") || d.includes("parís") || d.includes("londres")) {
     return "9h 30m - 12h 00m";
   }
-  if (d.includes("nueva york") || d.includes("los ángeles") || d.includes("miami")) {
+  if (
+    d.includes("nueva york") ||
+    d.includes("los ángeles") ||
+    d.includes("miami")
+  ) {
     return "4h 30m - 6h 30m";
   }
 
@@ -70,11 +75,12 @@ function priceEstimate(origen, destino, pasajeros = 1) {
   const perPassenger = Math.round(base * 0.9);
   return {
     perPassenger,
-    total: perPassenger * pasajeros
+    total: perPassenger * pasajeros,
   };
 }
 
 const Vuelos = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const query = useQuery();
@@ -92,8 +98,11 @@ const Vuelos = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedVuelo, setSelectedVuelo] = useState(null);
   const [wishlist, setWishlist] = useState(() => {
+    if (!user?.correo) return [];
     try {
-      return JSON.parse(localStorage.getItem("wishlist") || "[]");
+      return JSON.parse(
+        localStorage.getItem(`wishlist_${user.correo}`) || "[]"
+      );
     } catch {
       return [];
     }
@@ -101,18 +110,25 @@ const Vuelos = () => {
 
   useEffect(() => {
     const filtrados = vuelos.filter((v) => {
-      const matchOrigen = origenFilter ? v.origen.toLowerCase().includes(origenFilter) : true;
-      const matchDestino = destinoFilter ? v.destino.toLowerCase().includes(destinoFilter) : true;
+      const matchOrigen = origenFilter
+        ? v.origen.toLowerCase().includes(origenFilter)
+        : true;
+      const matchDestino = destinoFilter
+        ? v.destino.toLowerCase().includes(destinoFilter)
+        : true;
       const matchFecha = fechaFilter ? v.fecha_salida === fechaFilter : true;
-      const matchPasajeros = pasajerosFilter > 0 ? v.pasajeros === pasajerosFilter : true;
+      const matchPasajeros =
+        pasajerosFilter > 0 ? v.pasajeros === pasajerosFilter : true;
       return matchOrigen && matchDestino && matchFecha && matchPasajeros;
     });
     setVuelosFiltrados(filtrados);
   }, [origenFilter, destinoFilter, fechaFilter, pasajerosFilter]);
 
   useEffect(() => {
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (user?.correo) {
+      localStorage.setItem(`wishlist_${user.correo}`, JSON.stringify(wishlist));
+    }
+  }, [wishlist, user?.correo]);
 
   const handleClearFilters = () => {
     setVuelosFiltrados(vuelos);
@@ -133,9 +149,13 @@ const Vuelos = () => {
   };
 
   const toggleWishlist = (vuelo, e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
+    if (e?.stopPropagation) e.stopPropagation();
+
+    if (!user?.correo) return; // evitar errores si no hay usuario
+
     const exists = wishlist.some((w) => w.id === vuelo.id);
     let next;
+
     if (exists) {
       next = wishlist.filter((w) => w.id !== vuelo.id);
     } else {
@@ -146,10 +166,12 @@ const Vuelos = () => {
           nombre: vuelo.nombre,
           origen: vuelo.origen,
           destino: vuelo.destino,
-          image: vuelo.image
-        }
+          image: vuelo.image,
+        },
       ];
     }
+
+    localStorage.setItem(`wishlist_${user.correo}`, JSON.stringify(next));
     setWishlist(next);
   };
 
@@ -220,7 +242,11 @@ const Vuelos = () => {
           {memoVuelos.map((vuelo) => {
             const duration = getEstimatedDuration(vuelo.origen, vuelo.destino);
             const seats = seatsAvailableFromId(vuelo.id);
-            const price = priceEstimate(vuelo.origen, vuelo.destino, vuelo.pasajeros || 1);
+            const price = priceEstimate(
+              vuelo.origen,
+              vuelo.destino,
+              vuelo.pasajeros || 1
+            );
 
             return (
               <div
@@ -232,11 +258,23 @@ const Vuelos = () => {
                 aria-label={vuelo.nombre}
               >
                 <button
-                  className={`wish-btn ${isInWishlist(vuelo.id) ? "wish-active" : ""}`}
+                  className={`wish-btn ${
+                    isInWishlist(vuelo.id) ? "wish-active" : ""
+                  }`}
                   onClick={(e) => toggleWishlist(vuelo, e)}
-                  aria-label={isInWishlist(vuelo.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
+                  aria-label={
+                    isInWishlist(vuelo.id)
+                      ? "Quitar de favoritos"
+                      : "Agregar a favoritos"
+                  }
                 >
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
                     <path d="M12 21s-7-4.35-10-7.33C-1 8.64 3.5 3 7.5 5.5 9.08 6.6 10 8 12 9.5c2-1.5 2.92-2.9 4.5-4 4-2.5 8.5 3.14 5.5 8.17C19 16.65 12 21 12 21z" />
                   </svg>
                 </button>
@@ -246,18 +284,38 @@ const Vuelos = () => {
                   <h2 className="tarjeta-titulo">{vuelo.nombre}</h2>
 
                   <div className="info-rows">
-                    <p><strong>Origen:</strong> <span className="small">{vuelo.origen}</span></p>
-                    <p><strong>Destino:</strong> <span className="small">{vuelo.destino}</span></p>
-                    <p><strong>Salida:</strong> <span className="small">{vuelo.fecha_salida} {vuelo.hora_salida ? `• ${vuelo.hora_salida}` : ""}</span></p>
+                    <p>
+                      <strong>Origen:</strong>{" "}
+                      <span className="small">{vuelo.origen}</span>
+                    </p>
+                    <p>
+                      <strong>Destino:</strong>{" "}
+                      <span className="small">{vuelo.destino}</span>
+                    </p>
+                    <p>
+                      <strong>Salida:</strong>{" "}
+                      <span className="small">
+                        {vuelo.fecha_salida}{" "}
+                        {vuelo.hora_salida ? `• ${vuelo.hora_salida}` : ""}
+                      </span>
+                    </p>
                   </div>
 
                   <p className="descripcion">
-                    {vuelo.descripcion && vuelo.descripcion !== "#" ? vuelo.descripcion : `${vuelo.origen} → ${vuelo.destino} • ${vuelo.duracion || duration}`}
+                    {vuelo.descripcion && vuelo.descripcion !== "#"
+                      ? vuelo.descripcion
+                      : `${vuelo.origen} → ${vuelo.destino} • ${
+                          vuelo.duracion || duration
+                        }`}
                   </p>
 
                   <div className="tarjeta-meta">
-                    <span><strong>Duración:</strong> {vuelo.duracion || duration}</span>
-                    <span><strong>Asientos:</strong> {seats} disponibles</span>
+                    <span>
+                      <strong>Duración:</strong> {vuelo.duracion || duration}
+                    </span>
+                    <span>
+                      <strong>Asientos:</strong> {seats} disponibles
+                    </span>
                   </div>
 
                   <button
@@ -277,42 +335,85 @@ const Vuelos = () => {
       )}
 
       {showModal && selectedVuelo && (
-        <div className="modal-fondo" role="dialog" aria-modal="true" onClick={closeModal}>
-          <div className="modal-contenedor vuelo-detalle" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-fondo"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeModal}
+        >
+          <div
+            className="modal-contenedor vuelo-detalle"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="detalle-header">
               <img src={selectedVuelo.image} alt={selectedVuelo.nombre} />
               <div className="detalle-titulo">
                 <h2>{selectedVuelo.nombre}</h2>
-                <p className="detalle-route">{selectedVuelo.origen} → {selectedVuelo.destino}</p>
-                <p className="detalle-fecha"><strong>Salida:</strong> {selectedVuelo.fecha_salida} {selectedVuelo.hora_salida ? `• ${selectedVuelo.hora_salida}` : ""}</p>
+                <p className="detalle-route">
+                  {selectedVuelo.origen} → {selectedVuelo.destino}
+                </p>
+                <p className="detalle-fecha">
+                  <strong>Salida:</strong> {selectedVuelo.fecha_salida}{" "}
+                  {selectedVuelo.hora_salida
+                    ? `• ${selectedVuelo.hora_salida}`
+                    : ""}
+                </p>
               </div>
-              <button className="modal-close" onClick={closeModal} aria-label="Cerrar detalle">✕</button>
+              <button
+                className="modal-close"
+                onClick={closeModal}
+                aria-label="Cerrar detalle"
+              >
+                ✕
+              </button>
             </div>
 
             <div className="detalle-body">
               <div className="detalle-left">
                 {/* descripción (cliente) */}
-                {selectedVuelo.descripcion && selectedVuelo.descripcion !== "#" ? (
+                {selectedVuelo.descripcion &&
+                selectedVuelo.descripcion !== "#" ? (
                   <p>{selectedVuelo.descripcion}</p>
                 ) : (
                   <p>
-                    {selectedVuelo.origen} → {selectedVuelo.destino}. Duración aproximada: <strong>{selectedVuelo.duracion || "—"}</strong>.
-                    Salida a las <strong>{selectedVuelo.hora_salida || "—"}</strong> con <strong>{selectedVuelo.aerolinea || "—"}</strong>.
+                    {selectedVuelo.origen} → {selectedVuelo.destino}. Duración
+                    aproximada: <strong>{selectedVuelo.duracion || "—"}</strong>
+                    . Salida a las{" "}
+                    <strong>{selectedVuelo.hora_salida || "—"}</strong> con{" "}
+                    <strong>{selectedVuelo.aerolinea || "—"}</strong>.
                   </p>
                 )}
 
-                <p><strong>Aerolínea:</strong> {selectedVuelo.aerolinea || "—"}</p>
-                <p><strong>Hora de salida:</strong> {selectedVuelo.hora_salida || "—"}</p>
-                <p><strong>Duración:</strong> {selectedVuelo.duracion || "—"}</p>
-                <p><strong>Pasajeros (capacidad):</strong> {selectedVuelo.pasajeros ?? "—"}</p>
-                <p><strong>Disponibilidad estimada de asientos:</strong> {seatsAvailableFromId(selectedVuelo.id)}</p>
+                <p>
+                  <strong>Aerolínea:</strong> {selectedVuelo.aerolinea || "—"}
+                </p>
+                <p>
+                  <strong>Hora de salida:</strong>{" "}
+                  {selectedVuelo.hora_salida || "—"}
+                </p>
+                <p>
+                  <strong>Duración:</strong> {selectedVuelo.duracion || "—"}
+                </p>
+                <p>
+                  <strong>Pasajeros (capacidad):</strong>{" "}
+                  {selectedVuelo.pasajeros ?? "—"}
+                </p>
+                <p>
+                  <strong>Disponibilidad estimada de asientos:</strong>{" "}
+                  {seatsAvailableFromId(selectedVuelo.id)}
+                </p>
               </div>
 
               <div className="detalle-right">
-                <p className="precio"><strong>Precio orientativo:</strong></p>
+                <p className="precio">
+                  <strong>Precio orientativo:</strong>
+                </p>
                 <p className="precio-valor">
                   {typeof selectedVuelo.precio === "number"
-                    ? new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(selectedVuelo.precio)
+                    ? new Intl.NumberFormat("es-MX", {
+                        style: "currency",
+                        currency: "MXN",
+                      }).format(selectedVuelo.precio)
                     : "Precio no disponible"}
                 </p>
 
@@ -322,22 +423,31 @@ const Vuelos = () => {
                     onClick={() => {
                       closeModal();
                       // NUEVO: redirige a la pantalla de Reservaciones y abre el formulario con el vuelo seleccionado
-                      navigate("/reservaciones", { state: { openForm: true, vueloId: selectedVuelo.id } });
+                      navigate("/reservaciones", {
+                        state: { openForm: true, vueloId: selectedVuelo.id },
+                      });
                     }}
                   >
                     Reservar ahora
                   </button>
 
                   <button
-                    className={`boton-wishlist ${isInWishlist(selectedVuelo.id) ? "active" : ""}`}
+                    className={`boton-wishlist ${
+                      isInWishlist(selectedVuelo.id) ? "active" : ""
+                    }`}
                     onClick={() => toggleWishlist(selectedVuelo)}
                     aria-pressed={isInWishlist(selectedVuelo.id)}
                   >
-                    {isInWishlist(selectedVuelo.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
+                    {isInWishlist(selectedVuelo.id)
+                      ? "Quitar de favoritos"
+                      : "Agregar a favoritos"}
                   </button>
                 </div>
 
-                <small className="nota">Información orientativa. Horarios y disponibilidad sujetos a confirmación por la aerolínea.</small>
+                <small className="nota">
+                  Información orientativa. Horarios y disponibilidad sujetos a
+                  confirmación por la aerolínea.
+                </small>
               </div>
             </div>
           </div>

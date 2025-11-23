@@ -10,7 +10,10 @@ function Login() {
     nombre: "",
     correo: "",
     contraseña: "",
+    numero: "",
+    direccion: "",
   });
+
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth(); // usar contexto
@@ -23,7 +26,13 @@ function Login() {
 
     if (isRegister) {
       // --- Registro ---
-      if (!formData.nombre || !formData.correo || !formData.contraseña) {
+      if (
+        !formData.nombre ||
+        !formData.correo ||
+        !formData.contraseña ||
+        !formData.numero ||
+        !formData.direccion
+      ) {
         setMessage("Todos los campos son obligatorios");
         return;
       }
@@ -34,11 +43,18 @@ function Login() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
+
         const data = await res.json();
 
         if (res.ok) {
           setMessage("✅ Usuario registrado correctamente");
-          setFormData({ nombre: "", correo: "", contraseña: "" });
+          setFormData({
+            nombre: "",
+            correo: "",
+            contraseña: "",
+            numero: "",
+            direccion: "",
+          });
           setIsRegister(false);
         } else setMessage(data.error || "Error al registrar");
       } catch {
@@ -57,6 +73,7 @@ function Login() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
+
         const data = await res.json();
 
         if (res.ok) {
@@ -72,19 +89,38 @@ function Login() {
 
   return (
     <div className="login-page">
-      <div className={`login-card ${isRegister ? "register" : "login"}`}>
+      <div className={`login-card ${isRegister ? "registro" : "login"}`}>
         <h2>{isRegister ? "Registro" : "Iniciar Sesión"}</h2>
 
         <form onSubmit={handleSubmit}>
           {isRegister && (
-            <input
-              type="text"
-              name="nombre"
-              placeholder="Nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-            />
+            <>
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+              />
+
+              <input
+                type="text"
+                name="numero"
+                placeholder="Número"
+                value={formData.numero}
+                onChange={handleChange}
+              />
+
+              <input
+                type="text"
+                name="direccion"
+                placeholder="Dirección"
+                value={formData.direccion}
+                onChange={handleChange}
+              />
+            </>
           )}
+
           <input
             type="email"
             name="correo"
