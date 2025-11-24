@@ -10,6 +10,9 @@ import avatar2 from "../../assets/avatars/avatar2.png";
 import avatar3 from "../../assets/avatars/avatar3.png";
 import avatar4 from "../../assets/avatars/avatar4.png";
 
+// Importar mock de vuelos para obtener destino
+import { vuelos } from "../../assets/mockups/vuelos";
+
 const Cuenta = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -19,6 +22,20 @@ const Cuenta = () => {
   const [wishlist, setWishlist] = useState([]);
   const [mostrarAvatares, setMostrarAvatares] = useState(false);
 
+  // 🔹 Estado para historial real del backend
+  const [historial, setHistorial] = useState([]);
+
+  // 🔹 Cargar historial desde backend por correo
+  useEffect(() => {
+    if (!user?.correo) return;
+
+    fetch(`http://localhost:5000/reservaciones?email=${user.correo}`)
+      .then((res) => res.json())
+      .then((data) => setHistorial(data))
+      .catch((err) => console.error("Error cargando historial:", err));
+  }, [user?.correo]);
+
+  // 🔹 Cargar lista de favoritos
   useEffect(() => {
     if (user?.correo) {
       const saved = JSON.parse(
@@ -28,7 +45,7 @@ const Cuenta = () => {
     }
   }, [user?.correo]);
 
-  // Avatar por usuario (ANTES del return condicional)
+  // Avatar seleccionado
   const savedAvatar = localStorage.getItem(
     `avatarSeleccionado_${user?.correo || "temp"}`
   );
@@ -37,7 +54,6 @@ const Cuenta = () => {
     savedAvatar || user?.foto || avatar1
   );
 
-  // Guardar avatar sin modificar user
   useEffect(() => {
     if (user?.correo) {
       localStorage.setItem(
@@ -47,7 +63,6 @@ const Cuenta = () => {
     }
   }, [avatarSeleccionado, user?.correo]);
 
-  // ❗ ESTE RETURN SIEMPRE VA DESPUÉS DE LOS HOOKS
   if (!user) return <p>Cargando usuario...</p>;
 
   const handleCerrarSesion = () => setMostrarConfirmacion(true);
@@ -71,6 +86,7 @@ const Cuenta = () => {
 
   return (
     <div className="cuenta-container">
+      {/* PANEL IZQUIERDO */}
       <div className="cuenta-izquierda">
         <div>
           <div className="foto-perfil-container">
@@ -127,6 +143,8 @@ const Cuenta = () => {
         >
           Ver favoritos ({wishlist.length})
         </button>
+
+        {/* WISHLIST MODAL */}
         {showWishlist && (
           <div
             className="wishlist-modal-fondo"
@@ -151,7 +169,7 @@ const Cuenta = () => {
                 <div className="wishlist-grid">
                   {wishlist.map((w) => (
                     <div key={w.id} className="wishlist-card">
-                      <img src={w.image} className="wishlist-thumb" />
+                      <img src={w.image} className="wishlist-thumb" alt="" />
 
                       <div className="wishlist-info">
                         <h4>{w.nombre}</h4>
@@ -182,10 +200,6 @@ const Cuenta = () => {
                   ))}
                 </div>
               )}
-
-              {/* BOTONES FINALES */}
-              <div className="wishlist-bottom-buttons">
-              </div>
             </div>
           </div>
         )}
@@ -195,11 +209,49 @@ const Cuenta = () => {
         </button>
       </div>
 
-      {/* Panel derecho */}
+      {/* PANEL DERECHO - HISTORIAL */}
       <div className="cuenta-derecha">
         <div className="historial-header">
           <h2 className="historial-titulo">Historial de Vuelos</h2>
         </div>
+
+        {historial.length === 0 ? (
+          <p className="historial-empty">No tienes reservaciones aún.</p>
+        ) : (
+          <div className="historial-lista">
+            {historial.map((r) => {
+              const vueloData = vuelos.find((v) => v.id === r.vueloId);
+
+              return (
+                <div key={r._id} className="historial-item">
+                  <h4>{r.aerolinea}</h4>
+
+                  <p>
+                    <strong>Pasajero:</strong> {r.nombre}
+                  </p>
+
+                  <p>
+                    <strong>Destino:</strong>{" "}
+                    {vueloData?.destino || "No disponible"}
+                  </p>
+
+                  <p>
+                    <strong>Fecha:</strong> {r.fecha_salida} — {r.hora_salida}
+                  </p>
+
+                  <p>
+                    <strong>Total:</strong> ${r.precio_total}
+                  </p>
+
+                  <p>
+                    <strong>Pago:</strong> {r.payment.method} ****
+                    {r.payment.cardLast4}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Modal de confirmación */}
