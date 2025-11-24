@@ -1,26 +1,28 @@
 //server.js
-require("dotenv").config(); // Para leer variables del .env
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors"); // 👈 Agregado
+const cors = require("cors");
 
 const app = express();
 
 // Middleware
-app.use(cors()); // 👈 Permite que el frontend (React) se comunique
-app.use(express.json()); // Para poder leer JSON en las peticiones
+app.use(cors());
+app.use(express.json());
 
-// Puerto del servidor
+// Puerto
 const PORT = process.env.PORT || 5000;
 
-// Conexión con MongoDB Atlas
-mongoose.connect(process.env.MONGO_URI)
+// Conexión MongoDB
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Conectado a MongoDB Atlas"))
   .catch((err) => console.error("❌ Error al conectar a MongoDB:", err));
 
 // Rutas
 app.use("/usuarios", require("./routes/usuarios"));
 app.use("/reservaciones", require("./routes/reservaciones"));
+app.use("/destinos", require("./routes/destinosr")); // 👈 NUEVA RUTA
 
 // Ruta principal
 app.get("/", (req, res) => {

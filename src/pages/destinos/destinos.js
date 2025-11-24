@@ -1,6 +1,5 @@
 // src/pages/destinos/destinos.js
 import React, { useState, useEffect, useMemo } from "react";
-import { vuelos } from "../../assets/mockups/vuelos";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./destinos.css";
 import { useAuth } from "../../context/AuthContext";
@@ -41,11 +40,7 @@ function getEstimatedDuration(origen = "", destino = "") {
   if (d.includes("madrid") || d.includes("parís") || d.includes("londres")) {
     return "9h 30m - 12h 00m";
   }
-  if (
-    d.includes("nueva york") ||
-    d.includes("los ángeles") ||
-    d.includes("miami")
-  ) {
+  if (d.includes("nueva york") || d.includes("los ángeles") || d.includes("miami")) {
     return "4h 30m - 6h 30m";
   }
 
@@ -94,7 +89,8 @@ const Vuelos = () => {
       ? parseInt(pasajerosParam, 10)
       : 0;
 
-  const [vuelosFiltrados, setVuelosFiltrados] = useState(vuelos);
+  const [vuelos, setVuelos] = useState([]);
+  const [vuelosFiltrados, setVuelosFiltrados] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedVuelo, setSelectedVuelo] = useState(null);
   const [wishlist, setWishlist] = useState(() => {
@@ -108,6 +104,23 @@ const Vuelos = () => {
     }
   });
 
+  // Fetch de destinos desde el backend
+  useEffect(() => {
+    const fetchDestinos = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/destinos"); // Cambia al URL de tu backend si es otro
+        const data = await res.json();
+        // Asegurar que cada destino tenga un id numérico para usar en la UI
+        const dataWithId = data.map((d, idx) => ({ id: idx + 1, ...d }));
+        setVuelos(dataWithId);
+      } catch (err) {
+        console.error("Error al obtener destinos:", err);
+      }
+    };
+    fetchDestinos();
+  }, []);
+
+  // Filtrado dinámico
   useEffect(() => {
     const filtrados = vuelos.filter((v) => {
       const matchOrigen = origenFilter
@@ -122,7 +135,7 @@ const Vuelos = () => {
       return matchOrigen && matchDestino && matchFecha && matchPasajeros;
     });
     setVuelosFiltrados(filtrados);
-  }, [origenFilter, destinoFilter, fechaFilter, pasajerosFilter]);
+  }, [vuelos, origenFilter, destinoFilter, fechaFilter, pasajerosFilter]);
 
   useEffect(() => {
     if (user?.correo) {
@@ -137,7 +150,6 @@ const Vuelos = () => {
 
   const openModal = (vuelo, e) => {
     if (e && e.stopPropagation) e.stopPropagation();
-    // asegurar objeto completo
     const full = vuelos.find((v) => v.id === vuelo.id) || vuelo;
     setSelectedVuelo(full);
     setShowModal(true);
@@ -150,12 +162,10 @@ const Vuelos = () => {
 
   const toggleWishlist = (vuelo, e) => {
     if (e?.stopPropagation) e.stopPropagation();
-
-    if (!user?.correo) return; // evitar errores si no hay usuario
+    if (!user?.correo) return;
 
     const exists = wishlist.some((w) => w.id === vuelo.id);
     let next;
-
     if (exists) {
       next = wishlist.filter((w) => w.id !== vuelo.id);
     } else {
@@ -179,52 +189,26 @@ const Vuelos = () => {
 
   const memoVuelos = useMemo(() => vuelosFiltrados, [vuelosFiltrados]);
 
-  /* --- Abre modal si viene location.state.openModalId desde navigate(...) --- */
+  /* --- Abrir modal desde location.state.openModalId --- */
   useEffect(() => {
     const openId = location?.state?.openModalId;
     if (openId) {
       const idNum = Number(openId);
       const full = vuelos.find((v) => v.id === idNum);
       if (full) {
-        // abrir modal con objeto completo
         setTimeout(() => {
           openModal(full);
-          // limpiar state para que no se vuelva a abrir si el usuario recarga o retrocede
           try {
             navigate(location.pathname, { replace: true, state: {} });
-          } catch (err) {
-            // no crítico si falla
-          }
+          } catch {}
         }, 80);
       } else {
-        // si no lo encuentra, limpiar igualmente
         try {
           navigate(location.pathname, { replace: true, state: {} });
-        } catch (err) {}
+        } catch {}
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state]);
-
-  /* --- Mantengo la funcionalidad anterior de highlight por query param si quieres dejarla:
-       (esto sigue funcionando si usas ?highlight=ID en vez de state) */
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const highlightId = params.get("highlight");
-    if (highlightId) {
-      setTimeout(() => {
-        const el = document.getElementById(`tarjeta-${highlightId}`);
-        if (el) {
-          el.classList.add("tarjeta-pop");
-          try {
-            el.scrollIntoView({ behavior: "smooth", block: "center" });
-          } catch (err) {}
-          setTimeout(() => el.classList.remove("tarjeta-pop"), 800);
-        }
-      }, 120);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search]);
+  }, [location.state, vuelos]);
 
   return (
     <div className="vuelos-container">
@@ -370,16 +354,13 @@ const Vuelos = () => {
 
             <div className="detalle-body">
               <div className="detalle-left">
-                {/* descripción (cliente) */}
-                {selectedVuelo.descripcion &&
-                selectedVuelo.descripcion !== "#" ? (
+                {selectedVuelo.descripcion && selectedVuelo.descripcion !== "#" ? (
                   <p>{selectedVuelo.descripcion}</p>
                 ) : (
                   <p>
                     {selectedVuelo.origen} → {selectedVuelo.destino}. Duración
                     aproximada: <strong>{selectedVuelo.duracion || "—"}</strong>
-                    . Salida a las{" "}
-                    <strong>{selectedVuelo.hora_salida || "—"}</strong> con{" "}
+                    . Salida a las <strong>{selectedVuelo.hora_salida || "—"}</strong> con{" "}
                     <strong>{selectedVuelo.aerolinea || "—"}</strong>.
                   </p>
                 )}
@@ -388,8 +369,7 @@ const Vuelos = () => {
                   <strong>Aerolínea:</strong> {selectedVuelo.aerolinea || "—"}
                 </p>
                 <p>
-                  <strong>Hora de salida:</strong>{" "}
-                  {selectedVuelo.hora_salida || "—"}
+                  <strong>Hora de salida:</strong> {selectedVuelo.hora_salida || "—"}
                 </p>
                 <p>
                   <strong>Duración:</strong> {selectedVuelo.duracion || "—"}
@@ -422,7 +402,6 @@ const Vuelos = () => {
                     className="boton-reservar"
                     onClick={() => {
                       closeModal();
-                      // NUEVO: redirige a la pantalla de Reservaciones y abre el formulario con el vuelo seleccionado
                       navigate("/reservaciones", {
                         state: { openForm: true, vueloId: selectedVuelo.id },
                       });
