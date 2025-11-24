@@ -1,74 +1,113 @@
+/* ===========================
+   VARIABLES DE COLOR
+   =========================== */
 :root {
   --primary: #00bfa5;
   --primary-dark: #008e76;
   --muted: #6b7280;
   --card: #ffffff;
   --shadow: rgba(10,20,30,0.10);
+  --danger: #ff6b6b;
+  --danger-light: #ffecec;
+  --table-hover: #e6f7f2;
+  --table-even: #f8fcfc;
 }
 
 /* ===========================
-   PANEL ADMIN FLOTANTE DERECHA
+   CONTENEDOR PRINCIPAL
    =========================== */
 .admin-container {
-  position: fixed;
-  top: 0;
-  right: 0;
-
-  width: 40vw;
-  height: 100vh;
-  background: var(--card);
+  display: flex;
+  flex-direction: row; /* Dos columnas lado a lado */
+  gap: 20px;
   padding: 20px;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--card);
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
 
+/* ===========================
+   COLUMNA FORMULARIO (IZQUIERDA)
+   =========================== */
+.admin-form-area {
+  flex: 1.2; /* un poco más ancho que la columna derecha */
   display: flex;
   flex-direction: column;
   gap: 16px;
-
-  border-left: 2px solid #eef2f6;
-  box-shadow: -10px 0 25px var(--shadow);
-  overflow: hidden;
-
-  font-family: 'Poppins', sans-serif;
 }
 
-/* Títulos */
-.admin-container h1 {
-  margin: 0;
-  margin-top: 10px;  /* ✔ ahora sí funciona */
+.admin-form-area h1, .admin-form-area h2 {
+  margin: 0 0 10px 0;
   color: var(--primary);
-  font-size: 1.4rem;
 }
 
-.admin-container h2 {
-  color: var(--muted);
-  font-size: 0.95rem;
-  margin: 12px 0 8px 0;  /* ✔ título más abajo */
+.admin-form-area form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #f7fdfc;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(10,20,30,0.05);
+}
+
+.admin-form-area input {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #cdeeea;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-form-area button {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-form-area button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
 }
 
 /* ===========================
-   SCROLL SOLO VERTICAL
+   COLUMNA TABLAS (DERECHA)
    =========================== */
-.admin-scroll-area {
+.admin-table-area {
   flex: 1;
-  overflow-y: auto;   /* ✔ solo vertical */
-  overflow-x: hidden; /* ❌ sin horizontal */
-  padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.admin-table-area h1 {
+  margin-bottom: 10px;
+  color: var(--primary);
 }
 
 /* ===========================
-   TABLA
+   TABLAS
    =========================== */
 .admin-table {
   width: 100%;
-  max-width: 50vw; /* ✔ tabla solo la mitad de la pantalla */
   border-collapse: collapse;
-
-  background: #fff;
   border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(10,20,30,0.05);
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(10,20,30,0.05);
 }
 
 .admin-table thead {
-  background: var(--primary);
+  background-color: var(--primary);
   color: #fff;
 }
 
@@ -77,60 +116,58 @@
   padding: 12px 14px;
   text-align: left;
   font-size: 14px;
-
-  white-space: normal; /* ✔ permite salto de línea */
+  white-space: nowrap;
 }
 
 .admin-table tbody tr:nth-child(even) {
-  background: #f8fcfc;
+  background-color: var(--table-even);
 }
 
 .admin-table tbody tr:hover {
-  background: #e6f7f2;
-  transition: 0.15s;
+  background-color: var(--table-hover);
+  transition: background-color 0.15s;
 }
-
 
 /* ===========================
-   BOTONES
+   BOTONES DE TABLA
    =========================== */
 .admin-table button {
-  padding: 4px 6px;     /* ⬅️ más pequeño */
-  border-radius: 6px;   /* ⬅️ más compacto */
+  margin: 2px 2px 2px 0;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  font-size: 11px;      /* ⬅️ letra más pequeña */
-  font-weight: 600;
-  transition: .2s;
-  /* Separación vertical entre botones */
-  margin: 4px 0;   /* ← espacio arriba y abajo */
+  transition: 0.2s;
 }
 
+/* Botón acciones */
 .admin-table button:nth-child(1) {
-  background: var(--primary);
-  color: white;
+  background-color: var(--primary);
+  color: #fff;
 }
 .admin-table button:nth-child(1):hover {
-  background: var(--primary-dark);
+  background-color: var(--primary-dark);
   transform: translateY(-1px);
 }
 
 .admin-table button:nth-child(2) {
-  background: transparent;
+  background-color: transparent;
   border: 1px solid #cdeeea;
   color: var(--primary-dark);
 }
 .admin-table button:nth-child(2):hover {
-  background: #e6f7f2;
+  background-color: var(--table-hover);
 }
 
 .admin-table button:nth-child(3) {
-  background: transparent;
-  border: 1px solid #ff6b6b;
-  color: #ff6b6b;
+  background-color: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
 }
 .admin-table button:nth-child(3):hover {
-  background: #ffecec;
+  background-color: var(--danger-light);
 }
 
 /* ===========================
@@ -138,14 +175,27 @@
    =========================== */
 @media (max-width: 900px) {
   .admin-container {
-    width: 100%;
-    height: auto;
-    position: relative;
-    box-shadow: none;
-    border-left: none;
+    flex-direction: column;
   }
 
-  .admin-scroll-area {
-    max-height: 70vh;
+  .admin-form-area,
+  .admin-table-area {
+    width: 100%;
+    flex: none;
+  }
+
+  .admin-table th, .admin-table td {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .admin-form-area input {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .admin-form-area button {
+    font-size: 12px;
+    padding: 8px;
   }
 }
