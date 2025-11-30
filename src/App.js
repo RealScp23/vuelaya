@@ -8,7 +8,8 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+
+import { AuthProvider } from "./context/AuthContext";
 
 import Presentation from "./pages/presentation/presentation";
 import Login from "./pages/login/login";
@@ -19,9 +20,9 @@ import Contacto from "./pages/contacto/contacto";
 import Cuenta from "./pages/cuenta/cuenta";
 import Reservaciones from "./pages/reservaciones/reserva";
 
-// 🔥 Importante
+import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
-import AdminPage from "./pages/admin/AdminPage"; // <- crea este archivo
+import AdminPage from "./pages/admin/AdminPage";
 
 function AppWrapper() {
   const location = useLocation();
@@ -37,7 +38,7 @@ function AppWrapper() {
         <Route path="/" element={<Presentation />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Rutas protegidas (usuarios logueados) */}
+        {/* Rutas protegidas */}
         <Route
           path="/home"
           element={
@@ -46,6 +47,7 @@ function AppWrapper() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/vuelos"
           element={
@@ -54,6 +56,7 @@ function AppWrapper() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/contacto"
           element={
@@ -62,6 +65,7 @@ function AppWrapper() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/cuenta"
           element={
@@ -70,6 +74,7 @@ function AppWrapper() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/reservaciones"
           element={
@@ -79,7 +84,7 @@ function AppWrapper() {
           }
         />
 
-        {/* 🔥 Ruta exclusiva admin */}
+        {/* Solo admin */}
         <Route
           path="/admin"
           element={
@@ -89,7 +94,7 @@ function AppWrapper() {
           }
         />
 
-        {/* Redirección reservación */}
+        {/* Redirección de reservación */}
         <Route path="/reservacion/:id" element={<ReservacionRedirect />} />
 
         {/* 404 */}
@@ -97,17 +102,6 @@ function AppWrapper() {
       </Routes>
     </>
   );
-}
-
-function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (!isAuthenticated) navigate("/login", { replace: true });
-  }, [isAuthenticated, navigate]);
-
-  return isAuthenticated ? children : null;
 }
 
 function ReservacionRedirect() {
@@ -138,11 +132,11 @@ function NotFoundFallback() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <AppWrapper />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

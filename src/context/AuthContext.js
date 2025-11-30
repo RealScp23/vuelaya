@@ -5,18 +5,26 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);  // ← NUEVO
 
-  // ⭐ Cargar usuario guardado por clave única
+  // ⭐ Cargar usuario guardado al iniciar
   useEffect(() => {
     const lastEmail = localStorage.getItem("lastLoggedEmail");
 
     if (lastEmail) {
       const savedUser = localStorage.getItem(`user_${lastEmail}`);
-      if (savedUser) setUser(JSON.parse(savedUser));
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
     }
+
+    // simular carga mínima para evitar parpadeo
+    setTimeout(() => {
+      setLoading(false);
+    }, 100);
   }, []);
 
-  // ⭐ Guardar usuario en su propia clave única
+  // ⭐ Guardar usuario cada vez que cambia
   useEffect(() => {
     if (user) {
       localStorage.setItem(`user_${user.correo}`, JSON.stringify(user));
@@ -24,7 +32,7 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  // 🔥 Login: guardar datos del usuario
+  // 🔥 Login
   const login = (userData) => {
     const formatted = {
       nombre: userData.nombre,
@@ -33,17 +41,16 @@ export function AuthProvider({ children }) {
       direccion: userData.direccion,
       foto: userData.foto,
       rol: userData.rol,
-      _id: userData._id,
+      _id: userData.id || userData._id, // ✔️ Soporta ambos
     };
 
     setUser(formatted);
 
-    // Guardar al usuario correcto inmediatamente
     localStorage.setItem(`user_${userData.correo}`, JSON.stringify(formatted));
     localStorage.setItem("lastLoggedEmail", userData.correo);
   };
 
-  // Logout: solo borra la sesión activa
+  // 🔥 Logout
   const logout = () => {
     setUser(null);
     localStorage.removeItem("lastLoggedEmail");
@@ -53,7 +60,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, isAuthenticated }}
+      value={{ user, login, logout, isAuthenticated, loading }}
     >
       {children}
     </AuthContext.Provider>
@@ -61,3 +68,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+export { AuthContext };
