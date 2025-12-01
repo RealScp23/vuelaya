@@ -57,11 +57,17 @@ export default function Reservaciones() {
 
   // 🔹 Obtener todas las reservaciones desde el backend
   useEffect(() => {
+    const email = getUsuarioEmail(); // <-- correo del usuario logueado
+
     fetch(API_URL)
       .then((res) => res.json())
-      .then(setReservas)
+      .then((data) => {
+        const filtradas = data.filter((r) => r.email === email);
+        setReservas(filtradas);
+      })
       .catch((err) => console.error("Error al obtener reservaciones:", err));
   }, []);
+
 
   // Si venimos desde otra pantalla con { openForm, vueloId }
   useEffect(() => {
