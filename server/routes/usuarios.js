@@ -42,7 +42,7 @@ router.post("/registro", async (req, res) => {
 //            LOGIN
 // ===============================
 router.post("/login", async (req, res) => {
-  const { correo, contraseña } = req.body; // <- AHORA SE USA "", no "contraseña"
+  const { correo, contraseña } = req.body;
 
   try {
     const usuario = await Usuario.findOne({ correo });
@@ -51,10 +51,17 @@ router.post("/login", async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    // Comparamos contra usuario. que es lo que está guardado en MongoDB
     if (usuario.contraseña !== contraseña) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
+
+    // 👉 Crear notificación automática
+    const Notificacion = require("../models/Notificacion");
+
+    await Notificacion.create({
+      userId: usuario._id,
+      mensaje: `Bienvenido ${usuario.nombre}. Revisa los vuelos populares de esta semana.`,
+    });
 
     res.json({
       message: `Bienvenido ${usuario.nombre}`,

@@ -25,14 +25,19 @@
 }
 
 .nav-links li {
-  cursor: pointer;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.3rem;
+}
+
+.nav-links li a {
+  color: #006d5f;           /* color verde principal */
+  text-decoration: none;     /* quitar subrayado */
   transition: color 0.3s ease;
 }
 
-.nav-links li:hover {
-  color: #00bfa5;
+.nav-links li a:hover {
+  color: #000000;           /* verde más oscuro en hover */
+  text-decoration: none; /* opcional: subrayado al pasar el mouse */
 }

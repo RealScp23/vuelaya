@@ -13,7 +13,6 @@ function Login() {
     numero: "",
     direccion: "",
   });
-
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth(); // usar contexto
@@ -78,8 +77,9 @@ function Login() {
 
         if (res.ok) {
           console.log("RESPUESTA LOGIN:", JSON.stringify(data, null, 2));
-          login(data.usuario); // ✅ guarda usuario en contexto
-          navigate("/home"); // redirige al home
+
+          login(data.usuario); // ✅ activa el toast global y guarda usuario
+          navigate("/home");   // navega inmediatamente
         } else setMessage(data.error || "Credenciales incorrectas");
       } catch {
         setMessage("❌ Error de conexión con el servidor");

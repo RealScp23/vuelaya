@@ -23,6 +23,8 @@ mongoose
 app.use("/usuarios", require("./routes/usuarios"));
 app.use("/reservaciones", require("./routes/reservaciones"));
 app.use("/destinos", require("./routes/destinosr")); // 👈 NUEVA RUTA
+app.use("/notificaciones", require("./routes/notificaciones"));
+
 
 // Ruta principal
 app.get("/", (req, res) => {

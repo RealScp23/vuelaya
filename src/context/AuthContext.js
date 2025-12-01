@@ -5,55 +5,77 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // ⭐ Cargar usuario guardado por clave única
+  // Estado global del toast
+  const [toast, setToast] = useState({ mensaje: "", visible: false });
+
+  // Cargar usuario previamente guardado
   useEffect(() => {
     const lastEmail = localStorage.getItem("lastLoggedEmail");
 
     if (lastEmail) {
       const savedUser = localStorage.getItem(`user_${lastEmail}`);
-      if (savedUser) setUser(JSON.parse(savedUser));
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
     }
+
+    setTimeout(() => setLoading(false), 120);
   }, []);
 
-  // ⭐ Guardar usuario en su propia clave única
+  // Guardar usuario cuando cambie
   useEffect(() => {
-    if (user) {
+    if (user && user.correo) {
       localStorage.setItem(`user_${user.correo}`, JSON.stringify(user));
       localStorage.setItem("lastLoggedEmail", user.correo);
     }
   }, [user]);
 
-  // 🔥 Login: guardar datos del usuario
+  // Login con toast
   const login = (userData) => {
     const formatted = {
+      _id: userData.id || userData._id,  // siempre debe existir
       nombre: userData.nombre,
       correo: userData.correo,
       numero: userData.numero,
       direccion: userData.direccion,
       foto: userData.foto,
       rol: userData.rol,
-      _id: userData._id,
     };
 
     setUser(formatted);
+    localStorage.setItem(`user_${formatted.correo}`, JSON.stringify(formatted));
+    localStorage.setItem("lastLoggedEmail", formatted.correo);
 
-    // Guardar al usuario correcto inmediatamente
-    localStorage.setItem(`user_${userData.correo}`, JSON.stringify(formatted));
-    localStorage.setItem("lastLoggedEmail", userData.correo);
+    // Mostrar toast global
+    setToast({ mensaje: `¡Bienvenido, ${formatted.nombre}!`, visible: true });
+
+    // Ocultar toast automáticamente después de 4 segundos
+    setTimeout(() => {
+      setToast({ mensaje: "", visible: false });
+    }, 4000);
   };
 
-  // Logout: solo borra la sesión activa
+  // Logout
   const logout = () => {
-    setUser(null);
+    if (user?.correo) {
+      localStorage.removeItem(`user_${user.correo}`);
+    }
     localStorage.removeItem("lastLoggedEmail");
+    setUser(null);
   };
-
-  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, isAuthenticated }}
+      value={{
+        user,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        loading,
+        toast, // exportamos el toast
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -61,3 +83,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+export { AuthContext };

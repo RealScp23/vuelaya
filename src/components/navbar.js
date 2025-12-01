@@ -17,6 +17,7 @@ function Navbar() {
         <li><Link to="/contacto">Contacto</Link></li>
         <li><Link to="/cuenta">Cuenta</Link></li>
         <li><Link to="/reservaciones">Reservaciones</Link></li>
+        <li> <Link to="/notificaciones">Notificaciones</Link></li>
 
         {/* 🔥 SOLO admin ve esto */}
         {user?.rol === "admin" && (
