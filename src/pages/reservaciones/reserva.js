@@ -450,29 +450,27 @@ const crearReserva = async (payload) => {
 
             <div className="modal-content-scroll">
               <form className="form-reserva" onSubmit={onSubmit}>
+                {/* Vuelo */}
                 <div className="form-row">
                   <label>Vuelo</label>
                   <input
                     readOnly
-                    value={
-                      getVueloById(form.vueloId)?.nombre ||
-                      "Selecciona desde Vuelos"
-                    }
+                    value={getVueloById(form.vueloId)?.nombre || "Selecciona desde Vuelos"}
                   />
                 </div>
 
-                <div className="form-row">
-                  <label>Nombre del pasajero</label>
-                  <input
-                    required
-                    value={form.nombrePasajero}
-                    onChange={(e) =>
-                      setForm((s) => ({ ...s, nombrePasajero: e.target.value }))
-                    }
-                  />
-                </div>
-
+                {/* Nombre y Teléfono */}
                 <div className="form-row two">
+                  <div>
+                    <label>Nombre del pasajero</label>
+                    <input
+                      required
+                      value={form.nombrePasajero}
+                      onChange={(e) =>
+                        setForm((s) => ({ ...s, nombrePasajero: e.target.value }))
+                      }
+                    />
+                  </div>
                   <div>
                     <label>Teléfono</label>
                     <input
@@ -482,6 +480,10 @@ const crearReserva = async (payload) => {
                       }
                     />
                   </div>
+                </div>
+
+                {/* Pasajeros y Asiento */}
+                <div className="form-row two">
                   <div>
                     <label>Pasajeros</label>
                     <input
@@ -499,29 +501,25 @@ const crearReserva = async (payload) => {
                       }}
                     />
                   </div>
-                </div>
-
-                <div className="form-row">
-                  <label>Asiento (opcional)</label>
-                  <input
-                    value={form.asiento}
-                    onChange={(e) =>
-                      setForm((s) => ({ ...s, asiento: e.target.value }))
-                    }
-                  />
+                  <div>
+                    <label>Asiento (opcional)</label>
+                    <input
+                      value={form.asiento}
+                      onChange={(e) => setForm((s) => ({ ...s, asiento: e.target.value }))}
+                    />
+                  </div>
                 </div>
 
                 <hr />
                 <h4>Pago (simulado)</h4>
 
+                {/* Tipo de tarjeta */}
                 <div className="form-row">
                   <label>Tipo de tarjeta</label>
                   <select
                     required
                     value={form.cardName}
-                    onChange={(e) =>
-                      setForm((s) => ({ ...s, cardName: e.target.value }))
-                    }
+                    onChange={(e) => setForm((s) => ({ ...s, cardName: e.target.value }))}
                   >
                     <option value="">Selecciona una tarjeta</option>
                     <option value="Visa">Visa</option>
@@ -534,17 +532,15 @@ const crearReserva = async (payload) => {
                   </select>
                 </div>
 
-                <div className="form-row two">
+                {/* Número, Expira, CVC */}
+                <div className="form-row three">
                   <div>
                     <label>Número de tarjeta</label>
                     <input
                       placeholder="1234123412341234"
                       value={form.cardNumber}
                       onChange={(e) =>
-                        setForm((s) => ({
-                          ...s,
-                          cardNumber: e.target.value.replace(/\D/g, ""),
-                        }))
+                        setForm((s) => ({ ...s, cardNumber: e.target.value.replace(/\D/g, "") }))
                       }
                     />
                   </div>
@@ -553,54 +549,42 @@ const crearReserva = async (payload) => {
                     <input
                       placeholder="08/26"
                       value={form.expiry}
-                      onChange={(e) =>
-                        setForm((s) => ({ ...s, expiry: e.target.value }))
-                      }
+                      onChange={(e) => setForm((s) => ({ ...s, expiry: e.target.value }))}
                     />
                   </div>
-                </div>
-
-                <div className="form-row two">
                   <div>
                     <label>CVC</label>
                     <input
                       placeholder="123"
                       value={form.cvc}
                       onChange={(e) =>
-                        setForm((s) => ({
-                          ...s,
-                          cvc: e.target.value.replace(/\D/g, ""),
-                        }))
+                        setForm((s) => ({ ...s, cvc: e.target.value.replace(/\D/g, "") }))
                       }
                     />
                   </div>
-                  <div>
-                    <label>Precio total</label>
-                    <input readOnly value={formatCurrency(form.precio_total)} />
-                  </div>
                 </div>
 
+                {/* Precio total */}
+                <div className="form-row">
+                  <label>Precio total</label>
+                  <input readOnly value={formatCurrency(form.precio_total)} />
+                </div>
+
+                {/* Botones */}
                 <div className="modal-actions">
-                  <button
-                    type="submit"
-                    className="btn-prim"
-                    disabled={processingPayment}
-                  >
+                  <button type="submit" className="btn-prim" disabled={processingPayment}>
                     {processingPayment
                       ? "Procesando..."
                       : formMode === "create"
                       ? "Pagar y reservar"
                       : "Guardar cambios"}
                   </button>
-                  <button
-                    type="button"
-                    className="btn-sec"
-                    onClick={() => setFormOpen(false)}
-                  >
+                  <button type="button" className="btn-sec" onClick={() => setFormOpen(false)}>
                     Cancelar
                   </button>
                 </div>
               </form>
+
 
               {successMessage && (
                 <div className="success-banner">{successMessage}</div>

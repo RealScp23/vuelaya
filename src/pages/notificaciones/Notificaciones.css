@@ -1,0 +1,93 @@
+.notif-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+  font-family: Arial, sans-serif;
+}
+
+.notif-title {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.notif-empty {
+  text-align: center;
+  color: #666;
+  font-size: 18px;
+}
+
+.notif-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notif-item {
+  background: #fff;
+  padding: 15px 20px;
+  margin-bottom: 12px;
+  border-left: 6px solid #00bfa5;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notif-item.leida {
+  opacity: 0.6;
+  border-left-color: #ccc;
+}
+
+.notif-item.no-leida {
+  font-weight: bold;
+}
+
+.notif-msg {
+  flex: 1;
+}
+
+.notif-date {
+  font-size: 13px;
+  color: #888;
+  margin-left: 15px;
+}
+
+.notif-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 15px;
+}
+
+.btn-leer,
+.btn-borrar {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-leer {
+  background: #28a745;
+  color: #fff;
+}
+
+.btn-leer:hover {
+  background: #218838;
+}
+
+.btn-borrar {
+  background: #dc3545;
+  color: #fff;
+}
+
+.btn-borrar:hover {
+  background: #c82333;
+}
