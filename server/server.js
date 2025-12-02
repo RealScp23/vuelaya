@@ -8,7 +8,7 @@ const app = express();
 // Middleware CORS
 app.use(cors({
   origin: [
-    "https://vuelaya-gamma.vercel.app", // dominio de tu frontend
+    "https://vuelaya-gamma.vercel.app",
     "http://localhost:3000"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -16,8 +16,11 @@ app.use(cors({
   credentials: true
 }));
 
-// Soporte para preflight (muy importante)
-app.options("*", cors());
+// ❌ ESTA LÍNEA NO SE USA EN EXPRESS 5 / RENDER
+// app.options("*", cors());
+
+// INNECESARIA, PORQUE YA ESTÁ CORS ACTIVADO ARRIBA
+// app.options("/*", cors());
 
 app.use(express.json());
 
