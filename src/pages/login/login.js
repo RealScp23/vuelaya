@@ -37,7 +37,7 @@ function Login() {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/usuarios/registro", {
+        const res = await fetch("https://vuelaya-jhfa.onrender.com/usuarios/registro", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -67,7 +67,7 @@ function Login() {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/usuarios/login", {
+        const res = await fetch("https://vuelaya-jhfa.onrender.com/usuarios/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),

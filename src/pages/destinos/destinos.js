@@ -108,7 +108,7 @@ const Vuelos = () => {
   useEffect(() => {
     const fetchDestinos = async () => {
       try {
-        const res = await fetch("http://localhost:5000/destinos"); // Cambia al URL de tu backend si es otro
+        const res = await fetch("https://vuelaya-jhfa.onrender.com/destinos"); // Cambia al URL de tu backend si es otro
         const data = await res.json();
         // Asegurar que cada destino tenga un id numérico para usar en la UI
         const dataWithId = data.map((d, idx) => ({ id: idx + 1, ...d }));

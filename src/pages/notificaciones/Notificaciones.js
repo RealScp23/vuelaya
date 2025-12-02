@@ -10,7 +10,7 @@ export default function Notificaciones() {
   const cargarNotificaciones = useCallback(async () => {
     if (!user?._id) return;
     try {
-      const res = await axios.get(`http://localhost:5000/notificaciones/${user._id}`);
+      const res = await axios.get(`https://vuelaya-jhfa.onrender.com/notificaciones/${user._id}`);
       setNotificaciones(res.data);
     } catch (error) {
       console.error("Error al cargar notificaciones:", error);
@@ -24,7 +24,7 @@ export default function Notificaciones() {
   // Marcar como leída
   const marcarComoLeida = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/notificaciones/${id}/leida`);
+      await axios.put(`https://vuelaya-jhfa.onrender.com/notificaciones/${id}/leida`);
       setNotificaciones((prev) => 
         prev.map((n) => (n._id === id ? { ...n, leida: true } : n))
       );
@@ -36,7 +36,7 @@ export default function Notificaciones() {
   // Borrar notificación
   const borrarNotificacion = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/notificaciones/${id}`);
+      await axios.delete(`https://vuelaya-jhfa.onrender.com/notificaciones/${id}`);
       setNotificaciones((prev) => prev.filter((n) => n._id !== id));
     } catch (error) {
       console.error("Error al eliminar notificación:", error);

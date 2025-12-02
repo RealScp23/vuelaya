@@ -29,7 +29,7 @@ const Cuenta = () => {
   useEffect(() => {
     if (!user?.correo) return;
 
-    fetch(`http://localhost:5000/reservaciones?email=${user.correo}`)
+    fetch(`https://vuelaya-jhfa.onrender.com/reservaciones?email=${user.correo}`)
       .then((res) => res.json())
       .then((data) => setHistorial(data))
       .catch((err) => console.error("Error cargando historial:", err));

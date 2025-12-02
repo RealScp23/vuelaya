@@ -8,7 +8,7 @@ import { vuelos } from "../../assets/mockups/vuelos";
 const formatCurrency = (n) =>
   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(n || 0);
 
-const API_URL = "http://localhost:5000/reservaciones";
+const API_URL = "https://vuelaya-jhfa.onrender.com/reservaciones";
 
 /* Leer email del usuario desde localStorage (si está logueado) */
 function getUsuarioEmail() {
