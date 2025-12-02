@@ -3,8 +3,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 3rem;
-  background-color: #fff;
+  padding: 1rem 2rem;
+  background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   position: sticky;
   top: 0;
@@ -17,27 +17,74 @@
   color: #00bfa5;
 }
 
+/* --- Links en desktop --- */
 .nav-links {
   display: flex;
-  list-style: none;
   gap: 2rem;
+  list-style: none;
   align-items: center;
-}
-
-.nav-links li {
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
 }
 
 .nav-links li a {
-  color: #006d5f;           /* color verde principal */
-  text-decoration: none;     /* quitar subrayado */
-  transition: color 0.3s ease;
+  color: #006d5f;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
 }
 
 .nav-links li a:hover {
-  color: #000000;           /* verde más oscuro en hover */
-  text-decoration: none; /* opcional: subrayado al pasar el mouse */
+  color: #000;
+}
+
+/* ---------- HAMBURGER (solo aparece en móvil) ---------- */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.line {
+  width: 28px;
+  height: 3px;
+  background: #006d5f;
+  transition: 0.3s;
+}
+
+/* --- Modo móvil --- */
+@media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 70px;
+    right: 0;
+    background: #ffffff;
+    flex-direction: column;
+    width: 100%;
+    max-width: 250px;
+    padding: 1.5rem 1rem;
+    gap: 1.5rem;
+    border-radius: 10px 0 0 10px;
+    box-shadow: -2px 0 12px rgba(0,0,0,0.15);
+    transform: translateX(100%);
+    transition: 0.3s ease-in-out;
+  }
+
+  /* Cuando está abierto */
+  .nav-links.active {
+    transform: translateX(0);
+  }
+
+  .nav-links li {
+    width: 100%;
+  }
+
+  .nav-links li a {
+    width: 100%;
+    display: block;
+    padding: 0.5rem 0;
+  }
 }
