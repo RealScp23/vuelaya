@@ -7,7 +7,15 @@ const cors = require("cors");
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://vuelaya-gamma.vercel.app/", // 👈 coloca aquí el dominio de Vercel
+    "http://localhost:5000"
+  ],
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Puerto
@@ -22,9 +30,8 @@ mongoose
 // Rutas
 app.use("/usuarios", require("./routes/usuarios"));
 app.use("/reservaciones", require("./routes/reservaciones"));
-app.use("/destinos", require("./routes/destinosr")); // 👈 NUEVA RUTA
+app.use("/destinos", require("./routes/destinosr"));
 app.use("/notificaciones", require("./routes/notificaciones"));
-
 
 // Ruta principal
 app.get("/", (req, res) => {
