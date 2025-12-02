@@ -1,4 +1,3 @@
-//server.js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -6,15 +5,19 @@ const cors = require("cors");
 
 const app = express();
 
-// Middleware
+// Middleware CORS
 app.use(cors({
   origin: [
-    "https://vuelaya-gamma.vercel.app/", // 👈 coloca aquí el dominio de Vercel
+    "https://vuelaya-gamma.vercel.app", // dominio de tu frontend
     "http://localhost:3000"
   ],
-  methods: "GET,POST,PUT,DELETE",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
+// Soporte para preflight (muy importante)
+app.options("*", cors());
 
 app.use(express.json());
 
@@ -33,7 +36,6 @@ app.use("/reservaciones", require("./routes/reservaciones"));
 app.use("/destinos", require("./routes/destinosr"));
 app.use("/notificaciones", require("./routes/notificaciones"));
 
-// Ruta principal
 app.get("/", (req, res) => {
   res.send("Servidor y base de datos conectados correctamente ✅");
 });
