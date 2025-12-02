@@ -27,7 +27,7 @@ function AdminPage() {
 
   const obtenerUsuarios = async () => {
     try {
-      const res = await fetch("http://localhost:5000/usuarios");
+      const res = await fetch("https://vuelaya-jhfa.onrender.com/usuarios");
       const data = await res.json();
       setUsuarios(data);
     } catch (error) {
@@ -39,7 +39,7 @@ function AdminPage() {
 
   const cambiarRol = async (id, nuevoRol) => {
     try {
-      await fetch(`http://localhost:5000/usuarios/${id}/rol`, {
+      await fetch(`https://vuelaya-jhfa.onrender.com/usuarios/${id}/rol`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rol: nuevoRol }),
@@ -55,7 +55,7 @@ function AdminPage() {
 
   const eliminarUsuario = async (id) => {
     try {
-      await fetch(`http://localhost:5000/usuarios/${id}`, { method: "DELETE" });
+      await fetch(`https://vuelaya-jhfa.onrender.com/usuarios/${id}`, { method: "DELETE" });
       setUsuarios((prev) => prev.filter((u) => u._id !== id));
     } catch (error) {
       console.log("Error al eliminar usuario:", error);
@@ -64,7 +64,7 @@ function AdminPage() {
 
   const obtenerDestinos = async () => {
     try {
-      const res = await fetch("http://localhost:5000/destinos");
+      const res = await fetch("https://vuelaya-jhfa.onrender.com/destinos");
       const data = await res.json();
       setDestinos(data);
     } catch (error) {
@@ -74,7 +74,7 @@ function AdminPage() {
 
   const crearDestino = async () => {
     try {
-      await fetch("http://localhost:5000/destinos", {
+      await fetch("https://vuelaya-jhfa.onrender.com/destinos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevoDestino),
@@ -102,7 +102,7 @@ function AdminPage() {
 
   const eliminarDestino = async (id) => {
     try {
-      await fetch(`http://localhost:5000/destinos/${id}`, { method: "DELETE" });
+      await fetch(`https://vuelaya-jhfa.onrender.com/destinos/${id}`, { method: "DELETE" });
       setDestinos((prev) => prev.filter((d) => d._id !== id));
     } catch (error) {
       console.log("Error al eliminar destino:", error);
