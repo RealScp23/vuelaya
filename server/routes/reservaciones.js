@@ -1,77 +1,76 @@
-// routes/reservaciones.js
 const express = require("express");
 const router = express.Router();
 const Reservacion = require("../models/reservacion");
 
-// ✅ Crear nueva reservación
-router.post("/", async (req, res) => {
-  console.log("📩 Datos recibidos en backend:", req.body); // 👈 Log para depuración
+// ✅ Middleware para obtener userId desde el token (si usas JWT)
+const auth = require("../middleware/auth");  
+// Si NO usas token, te digo más abajo cómo cambiarlo
 
+// ========================================
+// 🔹 OBTENER SOLO RESERVACIONES DEL USUARIO
+// ========================================
+router.get("/", auth, async (req, res) => {
   try {
-    // Crear la nueva reserva con los datos recibidos del frontend
-    const nuevaReserva = new Reservacion(req.body);
-    const guardada = await nuevaReserva.save();
-    res.status(201).json(guardada);
-  } catch (error) {
-    console.error("❌ Error al crear reservación:", error);
-    res.status(400).json({ error: error.message });
-  }
-});
+    const userId = req.user.id; // viene del token
 
-// ✅ Obtener todas las reservaciones
-router.get("/", async (req, res) => {
-  try {
-    const reservaciones = await Reservacion.find().sort({ createdAt: -1 });
+    const reservaciones = await Reservacion.find({ userId });
     res.json(reservaciones);
-  } catch (error) {
-    console.error("❌ Error al obtener reservaciones:", error);
-    res.status(500).json({ error: "Error al obtener reservaciones" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Obtener una reservación por ID
-router.get("/:id", async (req, res) => {
+// ========================================
+// 🔹 CREAR RESERVACIÓN (DEL USUARIO)
+// ========================================
+router.post("/", auth, async (req, res) => {
   try {
-    const reserva = await Reservacion.findById(req.params.id);
-    if (!reserva) {
-      return res.status(404).json({ error: "Reservación no encontrada" });
-    }
-    res.json(reserva);
-  } catch (error) {
-    console.error("❌ Error al buscar reservación:", error);
-    res.status(500).json({ error: "Error al buscar la reservación" });
+    const nuevaReserva = await Reservacion.create({
+      ...req.body,
+      userId: req.user.id  // guardar al usuario que reservó
+    });
+
+    res.json(nuevaReserva);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Actualizar reservación
-router.put("/:id", async (req, res) => {
+// ========================================
+// 🔹 ACTUALIZAR RESERVACIÓN
+// ========================================
+router.put("/:id", auth, async (req, res) => {
   try {
-    const actualizada = await Reservacion.findByIdAndUpdate(
-      req.params.id,
+    const userId = req.user.id;
+
+    // Evitar editar reservas de otros
+    const reservacion = await Reservacion.findOneAndUpdate(
+      { _id: req.params.id, userId },
       req.body,
       { new: true }
     );
-    if (!actualizada) {
-      return res.status(404).json({ error: "Reservación no encontrada" });
-    }
-    res.json(actualizada);
-  } catch (error) {
-    console.error("❌ Error al actualizar reservación:", error);
-    res.status(400).json({ error: error.message });
+
+    res.json(reservacion);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Eliminar reservación
-router.delete("/:id", async (req, res) => {
+// ========================================
+// 🔹 ELIMINAR RESERVACIÓN DEL USUARIO
+// ========================================
+router.delete("/:id", auth, async (req, res) => {
   try {
-    const eliminada = await Reservacion.findByIdAndDelete(req.params.id);
-    if (!eliminada) {
-      return res.status(404).json({ error: "Reservación no encontrada" });
-    }
-    res.json({ message: "Reservación eliminada correctamente" });
-  } catch (error) {
-    console.error("❌ Error al eliminar reservación:", error);
-    res.status(500).json({ error: "Error al eliminar la reservación" });
+    const userId = req.user.id;
+
+    await Reservacion.findOneAndDelete({
+      _id: req.params.id,
+      userId
+    });
+
+    res.json({ message: "Reserva eliminada" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

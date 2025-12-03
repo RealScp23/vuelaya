@@ -23,7 +23,7 @@ function Home() {
     const dates = document.querySelector('input[placeholder="Fechas"]').value.trim();
     const passengers = document.querySelector('input[placeholder="Pasajeros"]').value.trim();
 
-    const lettersRegex = /^[A-Za-z\s]+$/;
+    const lettersRegex = /^[A-Za-züéáíóúñÑ\s]+$/;
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
     if (origin && !lettersRegex.test(origin)) {
@@ -65,7 +65,7 @@ function Home() {
             </div>
             <div className="input-group">
               <CalendarToday />
-              <input type="text" placeholder="Fechas" />
+              <input type="date" placeholder="Fechas" />
             </div>
             <div className="input-group">
               <People />
