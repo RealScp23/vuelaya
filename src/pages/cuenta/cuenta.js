@@ -22,20 +22,16 @@ const Cuenta = () => {
   const [wishlist, setWishlist] = useState([]);
   const [mostrarAvatares, setMostrarAvatares] = useState(false);
 
-  // 🔹 Estado para historial real del backend filtrado por usuario
+  // 🔹 Estado para historial real del backend
   const [historial, setHistorial] = useState([]);
 
-  // 🔹 Cargar historial desde backend por correo del usuario
+  // 🔹 Cargar historial desde backend por correo
   useEffect(() => {
     if (!user?.correo) return;
 
-    fetch(`https://vuelaya-jhfa.onrender.com/reservaciones`)
+    fetch(`https://vuelaya-jhfa.onrender.com/reservaciones?email=${user.correo}`)
       .then((res) => res.json())
-      .then((data) => {
-        // Filtrar solo reservaciones de este usuario
-        const filtrado = data.filter((r) => r.email === user.correo);
-        setHistorial(filtrado);
-      })
+      .then((data) => setHistorial(data))
       .catch((err) => console.error("Error cargando historial:", err));
   }, [user?.correo]);
 
